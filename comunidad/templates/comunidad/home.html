@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIA KM5 - Portal Comunitario</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        .hero-section {
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+                        url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&q=80&w=2070');
+            background-size: cover;
+            background-position: center;
+            height: 60vh;
+            display: flex;
+            align-items: center;
+            color: white;
+            border-radius: 0 0 50px 50px;
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            color: #198754;
+        }
+        .info-card { border: none; border-radius: 15px; transition: 0.3s; }
+        .info-card:hover { transform: translateY(-10px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark transparent pt-3">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">SIA KM5</a>
+            <div>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'lista_habitantes' %}" class="btn btn-success btn-sm">Ir al Sistema</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm">Acceso Administrativo</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero-section text-center mb-5">
+        <div class="container">
+            <h1 class="display-3 fw-bold">Comunidad KM5</h1>
+            <p class="lead">Rubio, Municipio Junín - Estado Táchira</p>
+            <div class="mt-4">
+                <span class="badge bg-success px-3 py-2">SIA KM5 - Gestión Digital 2026</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card info-card h-100 p-4 text-center shadow-sm">
+                    <i class="bi bi-geo-alt-fill feature-icon"></i>
+                    <h4 class="fw-bold mt-3">Ubicación</h4>
+                    <p class="text-muted">Situada en la vía principal de Rubio, KM5 es el corazón de nuestra entrada municipal, una zona de gente trabajadora y pujante.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card info-card h-100 p-4 text-center shadow-sm">
+                    <i class="bi bi-people-fill feature-icon"></i>
+                    <h4 class="fw-bold mt-3">Población</h4>
+                    <p class="text-muted">Actualmente contamos con <strong>{{ total }}</strong> habitantes censados en el sistema, trabajando juntos por el bienestar común.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card info-card h-100 p-4 text-center shadow-sm">
+                    <i class="bi bi-laptop-fill feature-icon"></i>
+                    <h4 class="fw-bold mt-3">Proyecto SIA</h4>
+                    <p class="text-muted">Sistema de Información Automatizado desarrollado por estudiantes de Ingeniería Informática para la organización comunitaria.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row align-items-center mb-5 py-4">
+            <div class="col-md-6">
+                <h2 class="fw-bold">Sobre Rubio y KM5</h2>
+                <p class="text-muted">Rubio es reconocida por su arquitectura de puentes y su clima de montaña. El sector KM5 se caracteriza por ser una zona mixta (residencial y comercial) que conecta a las familias con el centro de la Ciudad de los Puentes.</p>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i> Gestión de CLAP y Servicios.</li>
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i> Registro de Necesidades Especiales.</li>
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i> Organización por Calles y Sectores.</li>
+                </ul>
+            </div>
+            <div class="col-md-6 text-center">
+                <img src="https://via.placeholder.com/500x300" alt="Comunidad Rubio" class="img-fluid rounded-4 shadow-lg">
+            </div>
+        </div>
+
+        <footer class="text-center py-5 border-top">
+            <p class="mb-1 fw-bold">SIA KM5 &copy; 2026</p>
+            <p class="small text-muted">Desarrollado como Proyecto Socio-Integrador (PSI) - UPTAIET</p>
+        </footer>
+    </div>
+
+</body>
+</html>
+

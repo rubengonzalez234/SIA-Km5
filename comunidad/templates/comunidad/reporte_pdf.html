@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: sans-serif; font-size: 12px; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .footer { position: fixed; bottom: 0; width: 100%; text-align: right; font-size: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>REPORTE DE CENSO - COMUNIDAD KM5</h1>
+        <p>Generado el: {{ fecha }}</p>
+        {% if busqueda %}<p>Filtro aplicado: "{{ busqueda }}"</p>{% endif %}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Cédula</th>
+                <th>Nombre</th>
+                <th>Calle/Sector</th>
+                <th>Enfermedad</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for h in habitantes %}
+            <tr>
+                <td>{{ h.cedula }}</td>
+                <td>{{ h.nombres }} {{ h.apellidos }}</td>
+                <td>{{ h.calle_sector }}</td>
+                <td>{{ h.enfermedad_cronica|default:"Ninguna" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="footer">
+        Sistema de Información KM5 - UPTAIET
+    </div>
+</body>
+</html>
