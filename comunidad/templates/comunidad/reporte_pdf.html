@@ -1,45 +1,223 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
+    <meta charset="UTF-8">
     <style>
-        body { font-family: sans-serif; font-size: 12px; }
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .footer { position: fixed; bottom: 0; width: 100%; text-align: right; font-size: 10px; }
+        @page {
+            size: letter;
+            margin: 40px;
+        }
+        body { 
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar-simulada {
+            background-color: #0d6efd;
+            padding: 15px 20px;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+        .header-info {
+            margin-bottom: 25px;
+        }
+        .titulo-reporte {
+            font-size: 24px;
+            font-weight: bold;
+            color: #222222;
+            margin: 0 0 5px 0;
+        }
+        .sector-titulo {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1a1a2e;
+            margin: 5px 0 10px 0;
+        }
+        .meta-tabla {
+            width: 100%;
+            margin-top: 15px;
+            font-size: 12px;
+            border-collapse: collapse;
+        }
+        .meta-tabla td {
+            padding: 4px 0;
+            color: #555555;
+        }
+        .tabla-datos {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .tabla-datos th {
+            background-color: #f8f9fa;
+            color: #1a1a2e;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .tabla-datos td {
+            font-size: 12px;
+            padding: 9px 8px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #333333;
+        }
+        .tabla-datos tr:hover {
+            background-color: #f8faff;
+        }
+        .cedula-txt {
+            font-weight: bold;
+            color: #555555;
+        }
+        .badge-parentesco {
+            font-size: 10px;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 12px;
+            display: inline-block;
+            text-align: center;
+        }
+        .bg-jefe {
+            background-color: #0d6efd;
+            color: #ffffff;
+        }
+        .bg-miembro {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            font-size: 10px;
+            color: #777777;
+            text-align: center;
+            border-top: 1px solid #dddddd;
+            padding-top: 8px;
+        }
+        .genero-text {
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>REPORTE DE CENSO - COMUNIDAD KM5</h1>
-        <p>Generado el: {{ fecha }}</p>
-        {% if busqueda %}<p>Filtro aplicado: "{{ busqueda }}"</p>{% endif %}
+
+    <div class="navbar-simulada">
+        SIA KM5 — Sistema de Información Automatizado
     </div>
 
-    <table>
+    <div class="header-info">
+        <h1 class="titulo-reporte">Censo Digitalizado de Habitantes</h1>
+        
+        {% if sector %}
+        <div class="sector-titulo">■ Sector: {{ sector }}</div>
+        {% endif %}
+        
+        <table class="meta-tabla">
+            <tr>
+                <td style="width: 50%;"><strong>Fecha de Emisión:</strong> {{ fecha }} a las {{ hora }}</td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>Total Habitantes en este Reporte:</strong> {{ total }}
+                    <span style="margin-left: 15px; color: #888;">
+                        {% if busqueda %}
+                            {% if busqueda.upper == "NO POSEE" %}
+                                <strong>Filtro:</strong> Sin Cédula
+                            {% else %}
+                                <strong>Búsqueda:</strong> "{{ busqueda }}"
+                            {% endif %}
+                        {% elif ver == 'jefes' %}
+                            <strong>Filtro:</strong> Solo Jefes
+                        {% elif etapa %}
+                            <strong>Etapa:</strong> 
+                            {% if etapa == 'nino' %}Niños (0-12)
+                            {% elif etapa == 'adolescente' %}Adolescentes (13-17)
+                            {% elif etapa == 'adulto' %}Adultos (18-59)
+                            {% elif etapa == 'mayor' %}Adultos Mayores (60+)
+                            {% else %}{{ etapa }}{% endif %}
+                        {% else %}
+                            <strong>Filtro:</strong> Ninguno (Completo)
+                        {% endif %}
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- TABLA: LA COLUMNA DE PARENTESCO SE OCULTA CUANDO HAY ETAPA -->
+    <!-- ========================================================== -->
+    <table class="tabla-datos">
         <thead>
             <tr>
-                <th>Cédula</th>
-                <th>Nombre</th>
-                <th>Calle/Sector</th>
-                <th>Enfermedad</th>
+                <th style="width: {% if etapa %}20%{% else %}18%{% endif %};">
+                    Cédula
+                </th>
+                <th style="width: {% if etapa %}35%{% else %}32%{% endif %};">
+                    Nombre Completo
+                </th>
+                <th style="width: 10%;">Género</th>
+                <!-- COLUMNA PARENTESCO SOLO SI NO HAY ETAPA -->
+                {% if not etapa %}
+                <th style="width: 20%;">Parentesco</th>
+                {% endif %}
+                <th style="width: 10%;">Edad</th>
+                {% if not sector %}
+                <th style="width: {% if etapa %}25%{% else %}10%{% endif %};">
+                    Calle / Sector
+                </th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
             {% for h in habitantes %}
             <tr>
-                <td>{{ h.cedula }}</td>
-                <td>{{ h.nombres }} {{ h.apellidos }}</td>
-                <td>{{ h.calle_sector }}</td>
-                <td>{{ h.enfermedad_cronica|default:"Ninguna" }}</td>
+                <td class="cedula-txt">
+                    {% if h.cedula and h.cedula != "NO POSEE" %}
+                        {% if h.nacionalidad == 'E' %}E-{% else %}V-{% endif %}{{ h.cedula }}
+                    {% else %}
+                        NO POSEE
+                    {% endif %}
+                </td>
+                <td>{{ h.nombres|title }} {{ h.apellidos|title }}</td>
+                <td class="genero-text">{{ h.genero|default:"-" }}</td>
+                <!-- PARENTESCO SOLO SI NO HAY ETAPA -->
+                {% if not etapa %}
+                <td>
+                    {% if h.parentesco == 'JEFE' %}
+                        <span class="badge-parentesco bg-jefe">{{ h.get_parentesco_display|default:"JEFE DE FAMILIA" }}</span>
+                    {% else %}
+                        <span class="badge-parentesco bg-miembro">{{ h.get_parentesco_display|default:"Miembro" }}</span>
+                    {% endif %}
+                </td>
+                {% endif %}
+                <td>{{ h.edad }}</td>
+                {% if not sector %}
+                <td>{{ h.calle_sector|default:"S/N" }}</td>
+                {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="{% if etapa %}{% if sector %}4{% else %}5{% endif %}{% else %}{% if sector %}5{% else %}6{% endif %}{% endif %}" 
+                    style="text-align: center; padding: 20px; color: #888888;">
+                    No hay registros de habitantes para mostrar bajo este filtro.
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    
+
     <div class="footer">
-        Sistema de Información KM5 - UPTAIET
+        Sistema de Información Automatizado (SIA KM5)
     </div>
+
 </body>
 </html>

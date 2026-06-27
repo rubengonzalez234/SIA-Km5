@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIA KM5 - Gestión de Proyectos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+        .columna-fase { background: #eef2f7; border-radius: 12px; padding: 15px; min-height: 400px; }
+        .card-proyecto { border: none; border-radius: 10px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.2s; }
+        .card-proyecto:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
+        <div class="container-fluid px-4">
+            <span class="navbar-brand mb-0 h1 fw-bold"><i class="bi bi-house-door-fill"></i> SIA KM5</span>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="d-flex align-items-center ms-auto flex-wrap gap-2">
+                    
+                    <a href="{% url 'organizacion' %}" class="btn btn-light btn-sm fw-bold text-primary px-3">
+                        <i class="bi bi-diagram-3-fill me-1"></i> Organización
+                    </a>
+                    
+                    <a href="{% url 'panel_finanzas' %}" class="btn {% if request.resolver_match.url_name == 'panel_finanzas' %}btn-primary text-white border-light{% else %}btn-light text-primary{% endif %} btn-sm fw-bold px-3">
+                        <i class="bi bi-cash-coin me-1"></i> Finanzas
+                    </a>
+                    
+                    <a href="{% url 'lista_habitantes' %}" class="btn btn-light btn-sm fw-bold text-primary px-3">
+                        <i class="bi bi-people-fill me-1"></i> Censo Habitantes
+                    </a>
+    
+                    <a href="{% url 'censo_bombonas' %}" class="btn btn-light btn-sm fw-bold text-primary px-3">
+                        <i class="bi bi-fuel-pump-fill me-1"></i> Gas Comunal
+                    </a>
+                    <a href="{% url 'gestion_clap' %}" class="btn btn-light btn-sm me-3 fw-bold text-primary">
+                        <i class="bi bi-basket-fill"></i> CLAP
+                    </a>
+                    <span class="text-white ms-2 me-2 small d-none d-md-inline">Usuario: <strong>{{ user.username }}</strong></span>
+                    <a href="{% url 'logout' %}" class="btn btn-outline-light btn-sm">Cerrar Sesión</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4">
+        
+        {% if messages %}
+    {% for message in messages %}
+        {% if "fondos" not in message.message|lower and "saldo" not in message.message|lower %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 gap-3 bg-white p-3 rounded-4 shadow-sm px-4">
+            <div>
+                <h2 class="fw-bold text-dark mb-1"><i class="bi bi-journal-text text-primary me-2"></i>Gestión de Proyectos</h2>
+                <p class="text-muted mb-0 small">Registro y seguimiento lineal de las obras de inversión del Consejo Comunal.</p>
+            </div>
+            <div>
+                <button class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoProyecto">
+                    <i class="bi bi-plus-lg me-1"></i> Cargar Proyecto
+                </button>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            
+            <div class="col-lg-4">
+                <div class="columna-fase shadow-sm border-top border-primary border-4 bg-white p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                        <h5 class="fw-bold text-primary mb-0"><i class="bi bi-patch-check-fill me-1"></i>1. Aprobados</h5>
+                        <span class="badge bg-primary rounded-pill">{{ aprobados.count }}</span>
+                    </div>
+                    
+                    {% for p in aprobados %}
+                    <div class="card card-proyecto mb-3 p-3 border" style="cursor: pointer;" 
+                         onclick="abrirVisorProyecto('{{ p.id }}', '{{ p.nombre|escapejs }}', '{{ p.get_comite_display|escapejs }}', '{{ p.recursos_usd|default:'0' }}', '{{ p.estado }}', '{{ p.descripcion|default:''|escapejs }}', '{{ p.ejecutor|default:'Por definir'|escapejs }}', '{% url 'exportar_proyecto_pdf' p.id %}')">
+                        <h6 class="fw-bold text-dark mb-1">{{ p.nombre }}</h6>
+                        <p class="text-muted small mb-2">{{ p.descripcion|default:"Sin descripción añadida." }}</p>
+                        <div class="small mb-3">
+                            <span class="badge bg-light text-dark border"><i class="bi bi-tag me-1"></i>{{ p.get_comite_display }}</span>
+                            <span class="badge bg-success text-white float-end">${{ p.recursos_usd|floatformat:2 }}</span>
+                        </div>
+                        <div class="d-grid">
+                            <button onclick="abrirModalAvance('{% url 'avanzar_proyecto' p.id %}', '{{ p.nombre|escapejs }}', 'EN_EJECUCION')" class="btn btn-outline-primary btn-sm rounded-pill">
+                                <i class="bi bi-play-fill me-1"></i>Iniciar Ejecución
+                            </button>
+                        </div>
+                    </div>
+                    {% empty %}
+                        <div class="text-center py-4 text-muted small">No hay proyectos en espera de ejecución.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="columna-fase shadow-sm border-top border-warning border-4 bg-white p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                        <h5 class="fw-bold text-warning mb-0"><i class="bi bi-cone-striped me-1"></i>2. En Desarrollo</h5>
+                        <span class="badge bg-warning text-dark rounded-pill">{{ ejecucion.count }}</span>
+                    </div>
+
+                    {% for p in ejecucion %}
+                    <div class="card card-proyecto mb-3 p-3 border" style="cursor: pointer;" 
+                         onclick="abrirVisorProyecto('{{ p.id }}', '{{ p.nombre|escapejs }}', '{{ p.get_comite_display|escapejs }}', '{{ p.recursos_usd|default:'0' }}', '{{ p.estado }}', '{{ p.descripcion|default:''|escapejs }}', '{{ p.ejecutor|default:'Por definir'|escapejs }}', '{% url 'exportar_proyecto_pdf' p.id %}')">
+                        <h6 class="fw-bold text-dark mb-1">{{ p.nombre }}</h6>
+                        <div class="bg-light p-2 rounded small mb-3 border">
+                            <div><strong>Ejecutor:</strong> {{ p.ejecutor|default:"Por definir" }}</div>
+                            <div><strong>Presupuesto:</strong> ${{ p.recursos_usd|floatformat:2 }}</div>
+                        </div>
+                        <div class="d-grid">
+                            <button onclick="abrirModalAvance('{% url 'avanzar_proyecto' p.id %}', '{{ p.nombre|escapejs }}', 'CULMINADO')" class="btn btn-warning btn-sm text-dark fw-bold rounded-pill">
+                                <i class="bi bi-check-lg me-1"></i>Culminar Obra
+                            </button>
+                        </div>
+                    </div>
+                    {% empty %}
+                        <div class="text-center py-4 text-muted small">No hay obras activas en este momento.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="columna-fase shadow-sm border-top border-success border-4 bg-white p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                        <h5 class="fw-bold text-success mb-0"><i class="bi bi-check-circle-fill me-1"></i>3. Culminados</h5>
+                        <span class="badge bg-success rounded-pill">{{ culminados.count }}</span>
+                    </div>
+
+                    {% for p in culminados %}
+                    <div class="card card-proyecto mb-3 p-3 border bg-light bg-opacity-50" style="cursor: pointer;" 
+                         onclick="abrirVisorProyecto('{{ p.id }}', '{{ p.nombre|escapejs }}', '{{ p.get_comite_display|escapejs }}', '{{ p.recursos_usd|default:'0' }}', '{{ p.estado }}', '{{ p.descripcion|default:''|escapejs }}', '{{ p.ejecutor|default:'Por definir'|escapejs }}', '{% url 'exportar_proyecto_pdf' p.id %}')">
+                        <h6 class="fw-bold text-secondary mb-1 text-decoration-line-through">{{ p.nombre }}</h6>
+                        <div class="small text-success fw-bold"><i class="bi bi-shield-check me-1"></i>Obra Finalizada y Verificada</div>
+                    </div>
+                    {% empty %}
+                        <div class="text-center py-4 text-muted small">No se registran obras culminadas.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL: Cargar Proyecto -->
+    <div class="modal fade" id="modalNuevoProyecto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-journal-plus me-2"></i>Cargar Proyecto Comunal</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{% url 'lista_proyectos' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Nombre del Proyecto / Obra</label>
+                            <input type="text" name="nombre" class="form-control" required placeholder="Ej: Sustitución de red eléctrica sector central" autocomplete="off">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Comité Ejecutor Responsable</label>
+                            <select name="comite" class="form-select" required>
+                                <option value="" selected disabled>-- Seleccione un comité con vocería --</option>
+                                {% for codigo, nombre in comites_opciones %}
+                                    <option value="{{ codigo }}">{{ nombre }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text text-muted small">Nota: Solo se cargan los comités que tienen sus voceros o subvoceros registrados en el sistema.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Presupuesto Asignado (USD)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light fw-bold">$</span>
+                                <input type="number" step="0.01" name="recursos_usd" id="inputRecursosUsd" class="form-control" required placeholder="0.00" min="0.01">
+                            </div>
+                            <div class="form-text mt-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <span class="small text-muted">Presupuesto total para la obra.</span>
+                                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1.5 rounded-pill fs-7 fw-bold border border-primary border-opacity-10">
+                                    <i class="bi bi-cash-stack me-1"></i> Disponible: $<span id="disponibleMonto">{{ usd_disponible|floatformat:2 }}</span> USD
+                                </span>
+                            </div>
+                            <div id="alertaFondos" class="alert alert-danger mt-3 mb-0 d-none border-2 shadow-sm rounded-3 scale-up" role="alert">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
+                                    <div>
+                                        <strong class="d-block">Fondos Insuficientes</strong>
+                                        <span class="small">La cantidad ingresada no está disponible.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Descripción u Observaciones Iniciales</label>
+                            <textarea name="descripcion" class="form-control" rows="2" placeholder="Breve reseña aprobada en asamblea de ciudadanos..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="submit" id="btnSubmitProyecto" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm">Registrar Proyecto</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Avanzar Proyecto -->
+    <div class="modal fade" id="modalAvance" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold">Actualizar Estado de la Obra</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formAvance" method="POST">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <p>¿Confirma cambiar el estado de la obra: <strong id="nombreProyectoAvance"></strong>?</p>
+                        <input type="hidden" name="nuevo_estado" id="inputNuevoEstado">
+                        
+                        <div id="campoEjecutor" style="display: none;">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Escriba el nombre del Ejecutor o Cuadrilla</label>
+                                <input type="text" name="ejecutor" id="inputEjecutor" class="form-control" placeholder="Ej: Cuadrilla de Aguas de la Comunidad">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-secondary btn-sm rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-warning btn-sm rounded-pill text-dark fw-bold">Modificar Estado</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Visor del Proyecto -->
+    <div class="modal fade" id="modalVisorProyecto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-folder-symlink me-2"></i>Expediente Completo del Proyecto</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <div class="bg-white p-4 rounded-3 border mb-2">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="text-muted small fw-bold text-uppercase">Nombre de la Obra</label>
+                                <h4 class="fw-bold text-primary mb-0" id="visorNombre"></h4>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold">Comité Comunal Encargado</label>
+                                <div class="form-control-plaintext fw-semibold border-bottom" id="visorComite"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold">Presupuesto Asignado</label>
+                                <div class="form-control-plaintext fw-bold text-success border-bottom" id="visorMonto"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold">Estatus Fásico</label>
+                                <div class="mt-1"><span class="badge" id="visorEstatus"></span></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold">Ente Ejecutor / Cuadrilla</label>
+                                <div class="form-control-plaintext fw-semibold border-bottom" id="visorEjecutor"></div>
+                            </div>
+                            <div class="col-12">
+                                <label class="text-muted small fw-bold">Descripción / Notas Base</label>
+                                <div class="p-3 bg-light rounded border mt-1 small" id="visorDescripcion" style="white-space: pre-wrap;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white d-flex justify-content-between">
+                    <a id="btnDescargarPDF" href="#" class="btn btn-danger rounded-pill px-4 shadow-sm fw-bold">
+                        <i class="bi bi-file-earmark-pdf-fill me-1"></i> Imprimir Reporte PDF
+                    </a>
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cerrar Visor</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const mAvance = new bootstrap.Modal(document.getElementById('modalAvance'));
+        const mVisor = new bootstrap.Modal(document.getElementById('modalVisorProyecto'));
+
+        function abrirVisorProyecto(proyectoId, nombre, comite, monto, estatus, descripcion, ejecutor, urlPdf) {
+            if (event.target.tagName === 'BUTTON' || event.target.closest('button')) {
+                return;
+            }
+
+            document.getElementById('visorNombre').innerText = nombre;
+            document.getElementById('visorComite').innerText = comite;
+            document.getElementById('visorMonto').innerText = `$${monto} USD`;
+            document.getElementById('visorEjecutor').innerText = ejecutor;
+            document.getElementById('visorDescripcion').innerText = descripcion ? descripcion : "No se registraron observaciones iniciales.";
+            
+            document.getElementById('btnDescargarPDF').href = urlPdf;
+
+            const badge = document.getElementById('visorEstatus');
+            badge.className = "badge rounded-pill px-3 py-2 ";
+            if (estatus === 'APROBADO') {
+                badge.classList.add('bg-primary');
+                badge.innerText = '1. Aprobado';
+            } else if (estatus === 'EN_EJECUCION') {
+                badge.classList.add('bg-warning', 'text-dark');
+                badge.innerText = '2. En Desarrollo';
+            } else {
+                badge.classList.add('bg-success');
+                badge.innerText = '3. Culminado';
+            }
+
+            mVisor.show();
+        }
+
+        function abrirModalAvance(urlAction, nombre, proximoEstado) {
+            const form = document.getElementById('formAvance');
+            form.action = urlAction;
+            
+            document.getElementById('nombreProyectoAvance').innerText = nombre;
+            document.getElementById('inputNuevoEstado').value = proximoEstado;
+            
+            const divEjecutor = document.getElementById('campoEjecutor');
+            const inputEjecutor = document.getElementById('inputEjecutor');
+            
+            if (proximoEstado === 'EN_EJECUCION') {
+                divEjecutor.style.display = 'block';
+                inputEjecutor.required = true;
+            } else {
+                divEjecutor.style.display = 'none';
+                inputEjecutor.required = false;
+            }
+            mAvance.show();
+        }
+
+        // CONTROL EXCLUSIVO DE INTERACCIÓN MÓDULO FINANCIERO
+        document.addEventListener("DOMContentLoaded", function() {
+            const inputRecursos = document.getElementById('inputRecursosUsd');
+            const btnSubmit = document.getElementById('btnSubmitProyecto');
+            const alertaFondos = document.getElementById('alertaFondos');
+            const spanDisponible = document.getElementById('disponibleMonto');
+            
+            const disponibleUsdDecimal = parseFloat(spanDisponible.innerText.replace(',', '.')) || 0;
+
+            if (inputRecursos && btnSubmit && alertaFondos) {
+                inputRecursos.addEventListener('input', function() {
+                    let valorIngresado = parseFloat(this.value) || 0;
+                    
+                    if (valorIngresado > disponibleUsdDecimal) {
+                        alertaFondos.classList.remove('d-none');
+                        btnSubmit.disabled = true;
+                    } else {
+                        alertaFondos.classList.add('d-none');
+                        btnSubmit.disabled = false;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

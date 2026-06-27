@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      color: #1a1a1a;
+      padding: 40px 60px;
+      line-height: 1.6;
+      background: white;
+      position: relative;
+    }
+
+    .header-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+
+    .header-table td {
+      vertical-align: middle;
+    }
+
+    .header-text p {
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .divider {
+      border: 0;
+      border-top: 1px solid #000;
+      margin: 10px 0 20px 0;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin: 0 0 20px 0;
+      text-decoration: underline;
+    }
+
+    .paragraph {
+      text-align: justify;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+
+    .space-4 {
+      margin-bottom: 80px;
+    }
+
+    .signatures-label {
+      text-align: center;
+      font-size: 13px;
+      font-weight: bold;
+      margin-top: 60px;
+    }
+
+    .sig-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 40px;
+    }
+
+    .sig-cell {
+      width: 50%;
+      vertical-align: top;
+      text-align: center;
+      padding-top: 20px;
+      padding-bottom: 30px;
+    }
+
+    .signature-line {
+      border-top: 2px solid #000;
+      width: 200px;
+      margin: 0 auto 8px auto;
+    }
+
+    .signature-name {
+      font-weight: bold;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .signature-info {
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .signature-role {
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: bold;
+      margin-top: 4px;
+    }
+
+    .sig-cell-full {
+      text-align: center;
+      padding-top: 30px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 60px;
+      font-weight: bold;
+      text-transform: uppercase;
+      width: 100%;
+      font-size: 12px;
+      letter-spacing: 1px;
+      margin-left: -40px;
+    }
+
+    .line-large {
+      display: inline-block;
+      width: 220px;
+      border-bottom: 2px solid #000;
+      margin-bottom: 8px;
+    }
+
+    @media print {
+      .signature-line {
+        border-top: 2px solid black;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- MARCA DE AGUA COMENTADA (OPCIONAL) -->
+<!-- 
+<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; text-align: center; vertical-align: middle; display: table-cell;">
+    <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+        <img src="/static/img/marca_agua.jpg" style="opacity: 0.1; width: 60%; transform: rotate(-25deg);" />
+    </div>
+</div>
+-->
+
+<div class="content">
+  <!-- TABLA DE MEMBRETE CON ESCUDO Y LOGO -->
+  <table class="header-table">
+    <tr>
+      <td style="width: 20%; text-align: left;">
+        <img src="{{ escudoPath }}" style="width: 80px;" alt="Escudo" />
+      </td>
+      <td style="width: 60%; text-align: center;">
+        <div class="header-text">
+          <p>República Bolivariana de Venezuela<br>
+          Ministerio del Poder Popular para las Comunas y Movimientos Sociales<br>
+          Rubio – Municipio Junín – Estado Táchira</p>
+        </div>
+      </td>
+      <td style="width: 20%; text-align: right;">
+        <img src="{{ consejologoPath }}" style="width: 80px;" alt="Logo" />
+      </td>
+    </tr>
+  </table>
+
+  <hr class="divider">
+
+  <!-- TÍTULO -->
+  <div class="title">Carta de Buena Conducta</div>
+
+  <!-- TEXTO PRINCIPAL CON VARIABLES -->
+  <p class="paragraph">
+    Nosotros voceros del <strong>Consejo Comunal "Kilometro 5"</strong>, abajo firmantes registrados ante la
+    Oficina de Registro del Ministerio del Poder Popular para las Comunas y Movimientos Sociales bajo
+    <strong>CODIGO U-CCO-18-06-02-002911, CÓDIGO SITUR Nº: 20-14-04-001-0045, RIF C-503144238</strong>, ubicados en el
+    Kilometro 5 parte alta, parroquia Bramón del Municipio Junín del Estado Táchira. En uso de las
+    atribuciones legales que nos confiere la Ley Orgánica del Poder Popular y la Ley Orgánica de los
+    Consejos Comunales. Por medio de la presente hacemos constar que el ciudadano(a):
+  </p>
+
+  <p class="paragraph">
+    <strong>{{ apellido|title }}, {{ nombre|title }}</strong>,
+    <strong>{{ nacionalidad_texto }}</strong>,  <!-- "Venezolano(a)" o "Extranjero(a)" -->
+    <strong>{{ edad_texto }}</strong>,          <!-- "mayor de edad" o "menor de edad" -->
+    <strong>{{ documento_texto }}</strong>,    <!-- "Titular de la Cédula de Identidad Nº X" o "quien no posee Cédula de Identidad" -->
+    quien está domiciliado en el sector <strong>{{ ubicacion }}</strong>, desde hace <strong>{{ tiempo }}</strong> y durante la permanencia en la misma ha <strong>DEMOSTRADO BUENA CONDUCTA</strong> y responsabilidad como habitante de esta Comunidad en el núcleo familiar, y fuera del seno del hogar, acreditado como un ciudadano que ha demostrado buenos hábitos y modales en la comunidad.
+    Sin más aspectos que agregar.
+  </p>
+
+  <p class="paragraph">
+    Constancia que se expide a solicitud de la parte interesada en el kilómetro cinco, para <strong>{{ motivo|upper }}</strong>, a los {{ dia }} días del mes de {{ mes }} del {{ anio }}.
+  </p>
+
+  <!-- FIRMAS DE VOCEROS -->
+  <div class="signatures">
+    <div class="signatures-label">Por el Consejo Comunal</div>
+    <table class="sig-table">
+      <tr>
+        <td class="sig-cell-full">
+          <span class="line-large">________________________</span>
+          <div class="signature-name">{{ v_vivienda }}</div>
+          <div class="signature-info">C.I. {{ ci_vivienda }}</div>
+          <div class="signature-role">Vocero(a) Vivienda y Hábitat</div>
+          <div class="signature-info">Telf. {{ tel_vivienda }}</div>
+        </td>
+        <td class="sig-cell-full">
+          <span class="line-large">________________________</span>
+          <div class="signature-name">{{ v_servicios }}</div>
+          <div class="signature-info">C.I. {{ ci_servicios }}</div>
+          <div class="signature-role">Vocero(a) de Servicios Públicos</div>
+          <div class="signature-info">Telf. {{ tel_servicios }}</div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" class="sig-cell-full">
+          <span class="line-large">________________________</span>
+          <div class="signature-name">{{ v_salud }}</div>
+          <div class="signature-info">C.I. {{ ci_salud }}</div>
+          <div class="signature-role">Vocero(a) de Salud Integral</div>
+          <div class="signature-info">Telf. {{ tel_salud }}</div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- PIE DE PÁGINA -->
+  <div class="footer">
+    NUESTRO COMPROMISO ES SERVIRLES
+  </div>
+</div>
+
+</body>
+</html>

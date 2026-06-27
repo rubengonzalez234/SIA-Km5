@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIA KM5 - Gas Comunal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+        
+        /* ESTILOS COMPARTIDOS CON LA IDENTIDAD AZUL */
+        .section-card { background: white; border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); padding: 24px; }
+        .nav-pills .nav-link { border-radius: 10px; padding: 12px 20px; font-weight: 600; color: #6c757d; transition: all 0.3s; }
+        .nav-pills .nav-link.active { background-color: #0d6efd; color: white; box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2); }
+        
+        .calle-card { border: 1px solid #eef2f7; border-radius: 14px; background: #ffffff; transition: all 0.3s ease; }
+        .calle-card:hover { border-color: #0d6efd; box-shadow: 0 8px 25px rgba(13, 110, 253, 0.06); }
+        
+        .icon-box { display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 1.3rem; }
+        
+        .jefe-gas-row { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 12px; 
+            border-left: 4px solid #dee2e6; 
+            background: #f8f9fa; 
+            border-radius: 0 8px 8px 0; 
+            margin-bottom: 8px;
+        }
+        .jefe-gas-row.con-carga { border-left-color: #0d6efd; background: #ffffff; }
+        
+        .gas-badge {
+            font-size: 0.78rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            background-color: #f1f3f5;
+            color: #495057;
+            border: 1px solid #dee2e6;
+        }
+        .gas-badge.active { background-color: #e7f1ff; color: #0a58ca; border-color: #b6d4fe; }
+
+        /* ESTILOS INPUTS DE PEDIDO */
+        .input-pedido {
+            width: 55px;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            padding: 2px 0;
+            font-size: 0.85rem;
+        }
+        .input-pedido:focus {
+            border-color: #0d6efd;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+        }
+        .label-pedido-kg {
+            font-size: 0.72rem;
+            font-weight: bold;
+            color: #6c757d;
+            text-align: center;
+            display: block;
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
+    <div class="container-fluid px-4">
+        <span class="navbar-brand mb-0 h1 fw-bold"><i class="bi bi-house-door-fill"></i> SIA KM5</span>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="d-flex align-items-center ms-auto flex-wrap gap-2">
+                <a href="{% url 'lista_habitantes' %}" class="btn btn-light btn-sm fw-bold text-primary px-3">
+                    <i class="bi bi-people-fill me-1"></i> Censo Habitantes
+                </a>
+                <a href="{% url 'organizacion' %}" class="btn btn-light btn-sm fw-bold text-primary px-3">
+                    <i class="bi bi-diagram-3-fill me-1"></i> Organización
+                </a>
+                <a href="{% url 'panel_finanzas' %}" class="btn btn-light btn-sm fw-bold text-primary px-3">
+                    <i class="bi bi-cash-coin me-1"></i> Finanzas
+                </a>
+                <a href="{% url 'gestion_clap' %}" class="btn btn-light btn-sm fw-bold text-primary px-3">
+                    <i class="bi bi-basket-fill me-1"></i> CLAP
+                </a>
+                <a href="{% url 'lista_proyectos'%}" class="btn btn-light btn-sm fw-bold text-primary px-3">
+                    <i class="bi bi-folder-fill me-1"></i> Proyectos
+                </a>
+                
+                <span class="text-white ms-2 me-2 small d-none d-md-inline">Usuario: <strong>{{ user.username }}</strong></span>
+                <a href="{% url 'logout' %}" class="btn btn-outline-light btn-sm">Cerrar Sesión</a>
+            </div>    
+        </div>
+    </div>
+</nav>
+
+    <div class="container mb-5">
+        
+        <div id="liveAlertPlaceholder"></div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+            <div>
+                <h2 class="fw-bold text-dark mb-1">Gas Comunal</h2>
+                <p class="text-secondary mb-0">Censo de cilindros y pedidos</p>
+            </div>
+            <div class="bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill shadow-sm small fw-medium">
+                <i class="bi bi-fuel-pump-fill me-1"></i> Abastecimiento Seguro
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card section-card">
+                    <ul class="nav nav-pills d-flex gap-2" id="pills-tab" role="tablist">
+                        <li class="nav-item flex-fill" role="presentation">
+                            <button class="nav-link w-100 active" id="pills-censo-tab" data-bs-toggle="pill" data-bs-target="#pills-censo" type="button" role="tab" aria-controls="pills-censo" aria-selected="true">
+                                <i class="bi bi-card-list me-2"></i>Censo de Cilindros
+                            </button>
+                        </li>
+                        <li class="nav-item flex-fill" role="presentation">
+                            <button class="nav-link w-100" id="pills-pedido-tab" data-bs-toggle="pill" data-bs-target="#pills-pedido" type="button" role="tab" aria-controls="pills-pedido" aria-selected="false">
+                                <i class="bi bi-cart-fill me-2"></i>Pedido
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="pills-tabContent">
+            
+            <div class="tab-pane fade show active" id="pills-censo" role="tabpanel" aria-labelledby="pills-censo-tab">
+                <div class="row row-cols-1 row-cols-xl-2 g-4">
+                    {% for calle in bloques_calles %}
+                    <div class="col">
+                        <div class="calle-card p-4 shadow-sm h-100 d-flex flex-column">
+                            
+                            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-box bg-primary bg-opacity-10 text-primary me-3" style="width: 44px; height: 44px;">
+                                        <i class="bi bi-geo-alt-fill"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-0">{{ calle.nombre_calle }}</h5>
+                                        <span class="text-muted small">Jefes de Familia registrados: {{ calle.total_jefes }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex-grow-1 overflow-auto mb-3" style="max-height: 380px; padding-right: 4px;">
+                                {% if calle.jefes_data %}
+                                    {% for item in calle.jefes_data %}
+                                    <div class="jefe-gas-row {% if item.registro and item.registro.bombonas_10kg > 0 or item.registro.bombonas_18kg > 0 or item.registro.bombonas_27kg > 0 or item.registro.bombonas_43kg > 0 %}con-carga{% endif %} shadow-sm">
+                                        <div class="overflow-hidden me-2">
+                                            <strong class="text-dark text-capitalize d-block text-truncate" style="font-size: 0.92rem;">
+                                                {{ item.jefe.nombres }} {{ item.jefe.apellidos }}
+                                            </strong>
+                                            <span class="text-secondary small d-block mb-1">C.I: {{ item.jefe.cedula_formateada }}</span>
+                                            
+                                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                                <span class="gas-badge {% if item.registro.bombonas_10kg > 0 %}active{% endif %}">
+                                                    10Kg: <strong>{{ item.registro.bombonas_10kg|default:0 }}</strong>
+                                                </span>
+                                                <span class="gas-badge {% if item.registro.bombonas_18kg > 0 %}active{% endif %}">
+                                                    18Kg: <strong>{{ item.registro.bombonas_18kg|default:0 }}</strong>
+                                                </span>
+                                                <span class="gas-badge {% if item.registro.bombonas_27kg > 0 %}active{% endif %}">
+                                                    27Kg: <strong>{{ item.registro.bombonas_27kg|default:0 }}</strong>
+                                                </span>
+                                                <span class="gas-badge {% if item.registro.bombonas_43kg > 0 %}active{% endif %}">
+                                                    43Kg: <strong>{{ item.registro.bombonas_43kg|default:0 }}</strong>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="ps-2">
+                                            <button type="button" class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width:34px; height:34px;"
+                                                    onclick="abrirModalGas('{{ item.jefe.id }}', '{{ item.jefe.nombres|escapejs }} {{ item.jefe.apellidos|escapejs }}', '{{ item.registro.bombonas_10kg|default:0 }}', '{{ item.registro.bombonas_18kg|default:0 }}', '{{ item.registro.bombonas_27kg|default:0 }}', '{{ item.registro.bombonas_43kg|default:0 }}')"
+                                                    title="Gestionar Cilindros">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-center text-muted py-4 small italic">
+                                        <i class="bi bi-info-circle d-block fs-4 mb-1 text-secondary"></i>
+                                        No existen Jefes de Familia registrados en esta calle.
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mt-auto">
+                                <a href="{% url 'exportar_censo_bombonas_pdf' %}?calle={{ calle.nombre_calle }}" 
+                                 class="btn btn-primary btn-sm w-100 py-2 fw-bold rounded-pill shadow-sm">
+                              <i class="bi bi-file-earmark-pdf me-1"></i> Generar PDF de {{ calle.nombre_calle }}
+                            </a>
+                            </div>
+
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="pills-pedido" role="tabpanel" aria-labelledby="pills-pedido-tab">
+                <div class="row row-cols-1 row-cols-xl-2 g-4">
+                    {% for calle in bloques_calles %}
+                    <div class="col">
+                        <form id="form-pedido-{{ forloop.counter }}" action="{% url 'exportar_bombonas_pdf' %}" method="GET" class="h-100">
+                            <input type="hidden" name="calle" value="{{ calle.nombre_calle }}">
+                            
+                            <div class="calle-card p-4 shadow-sm h-100 d-flex flex-column">
+                                
+                                <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-box bg-primary bg-opacity-10 text-primary me-3" style="width: 44px; height: 44px;">
+                                            <i class="bi bi-cart-check-fill"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold text-dark mb-0">{{ calle.nombre_calle }}</h5>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex-grow-1 overflow-auto mb-3" style="max-height: 380px; padding-right: 4px;">
+                                    {% if calle.jefes_data %}
+                                        {% for item in calle.jefes_data %}
+                                        <div class="jefe-gas-row con-carga shadow-sm align-items-center">
+                                            <div class="overflow-hidden me-2" style="max-width: 55%;">
+                                                <strong class="text-dark text-capitalize d-block text-truncate" style="font-size: 0.92rem;">
+                                                    {{ item.jefe.nombres }} {{ item.jefe.apellidos }}
+                                                </strong>
+                                                <span class="text-secondary small d-block">C.I: {{ item.jefe.cedula_formateada }}</span>
+                                            </div>
+
+                                            <div class="d-flex gap-1 justify-content-end align-items-center">
+                                                <div>
+                                                    <label class="label-pedido-kg">10kg</label>
+                                                    <input type="number" name="p_10kg_{{ item.jefe.id }}" class="input-pedido" value="0" min="0" max="{{ item.registro.bombonas_10kg|default:0 }}" {% if not item.registro.bombonas_10kg %}disabled style="background:#e9ecef; color:#adb5bd;"{% endif %}>
+                                                </div>
+                                                <div>
+                                                    <label class="label-pedido-kg">18kg</label>
+                                                    <input type="number" name="p_18kg_{{ item.jefe.id }}" class="input-pedido" value="0" min="0" max="{{ item.registro.bombonas_18kg|default:0 }}" {% if not item.registro.bombonas_18kg %}disabled style="background:#e9ecef; color:#adb5bd;"{% endif %}>
+                                                </div>
+                                                <div>
+                                                    <label class="label-pedido-kg">27kg</label>
+                                                    <input type="number" name="p_27kg_{{ item.jefe.id }}" class="input-pedido" value="0" min="0" max="{{ item.registro.bombonas_27kg|default:0 }}" {% if not item.registro.bombonas_27kg %}disabled style="background:#e9ecef; color:#adb5bd;"{% endif %}>
+                                                </div>
+                                                <div>
+                                                    <label class="label-pedido-kg">43kg</label>
+                                                    <input type="number" name="p_43kg_{{ item.jefe.id }}" class="input-pedido" value="0" min="0" max="{{ item.registro.bombonas_43kg|default:0 }}" {% if not item.registro.bombonas_43kg %}disabled style="background:#e9ecef; color:#adb5bd;"{% endif %}>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="text-center text-muted py-4 small italic">
+                                            <i class="bi bi-info-circle d-block fs-4 mb-1 text-secondary"></i>
+                                            No existen habitantes para cargar pedidos.
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mt-auto pt-2">
+                                    <button type="button" class="btn btn-primary btn-sm w-100 py-2 fw-bold rounded-pill shadow-sm" 
+                                            onclick="confirmarPedido('form-pedido-{{ forloop.counter }}', '{{ calle.nombre_calle|escapejs }}', '{{ calle.total_jefes }}', {% if calle.nombre_lider or calle.lider or calle.jefe_calle %}true{% else %}false{% endif %})">
+                                        <i class="bi bi-file-earmark-pdf-fill me-1"></i> Generar PDF de {{ calle.nombre_calle }}
+                                    </button>
+                                </div>
+
+                            </div>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalGas" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 20px; border-top-right-radius: 20px;">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-fuel-pump me-1"></i> Inventario de Gas Comunal</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{% url 'guardar_bombonas' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="jefe_id" id="modalJefeId">
+                    
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <span class="text-secondary small d-block fw-bold text-uppercase" style="letter-spacing: 0.5px;">Jefe de Familia Seleccionado:</span>
+                            <h5 class="text-dark fw-bold mb-0 text-capitalize" id="modalJefeNombre">---</h5>
+                        </div>
+                        
+                        <div class="alert alert-light border shadow-sm rounded-3 py-2 px-3 small text-muted mb-4">
+                            <i class="bi bi-info-circle-fill text-primary me-1"></i> Indique la cantidad total de cilindros propiedad del núcleo familiar. Coloque 0 para vaciar.
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold text-secondary small">Cilindros 10 Kg</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-box-seam text-secondary"></i></span>
+                                    <input type="number" name="b10" id="inputB10" class="form-control border-2 fw-bold" min="0" max="20" required>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold text-secondary small">Cilindros 18 Kg</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-box-seam text-secondary"></i></span>
+                                    <input type="number" name="b18" id="inputB18" class="form-control border-2 fw-bold" min="0" max="20" required>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold text-secondary small">Cilindros 27 Kg</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-box-seam text-secondary"></i></span>
+                                    <input type="number" name="b27" id="inputB27" class="form-control border-2 fw-bold" min="0" max="20" required>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold text-secondary small">Cilindros 43 Kg</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-box-seam text-secondary"></i></span>
+                                    <input type="number" name="b43" id="inputB43" class="form-control border-2 fw-bold" min="0" max="20" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer bg-light p-3" style="border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;">
+                        <button type="button" class="btn btn-secondary btn-sm px-3 rounded-pill" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-primary btn-sm px-4 rounded-pill shadow-sm">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalConfirmarPedido" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 18px;">
+                <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 18px; border-top-right-radius: 18px;">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-info-circle-fill me-2"></i>¿Verificación de Pedido Correcta?</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <i class="bi bi-file-earmark-check text-primary" style="font-size: 3.5rem;"></i>
+                    <p class="mt-3 text-dark fw-medium">
+                        ¿Confirma que ha verificado las cantidades seleccionadas para la <strong id="textoCalleConfirmar" class="text-primary">---</strong>?
+                    </p>
+                    <p class="text-secondary small mb-0">
+                     Los jefes que no se seleccionaron serán omitidos de la planilla PDF.
+                    </p>
+                </div>
+                <div class="modal-footer bg-light border-0 d-flex justify-content-center p-3" style="border-bottom-left-radius: 18px; border-bottom-right-radius: 18px;">
+                    <button type="button" class="btn btn-secondary btn-sm px-4 rounded-pill" data-bs-dismiss="modal">No, revisar de nuevo</button>
+                    <button type="button" id="btnAceptarFormPDF" class="btn btn-primary btn-sm px-4 rounded-pill shadow-sm fw-bold">Sí, generar planilla</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const modalObjetoGas = new bootstrap.Modal(document.getElementById('modalGas'));
+        const modalConfirmacion = new bootstrap.Modal(document.getElementById('modalConfirmarPedido'));
+        let formularioSeleccionadoId = '';
+
+        function abrirModalGas(jefeId, nombreCompleto, b10, b18, b27, b43) {
+            document.getElementById('modalJefeId').value = jefeId;
+            document.getElementById('modalJefeNombre').innerText = nombreCompleto;
+            
+            document.getElementById('inputB10').value = b10;
+            document.getElementById('inputB18').value = b18;
+            document.getElementById('inputB27').value = b27;
+            document.getElementById('inputB43').value = b43;
+            
+            modalObjetoGas.show();
+        }
+
+        function confirmarPedido(formId, nombreCalle, totalJefes, tieneLider) {
+            const alertPlaceholder = document.getElementById('liveAlertPlaceholder');
+            
+            if (parseInt(totalJefes) === 0) {
+                alertPlaceholder.innerHTML = `
+                    <div class="alert alert-warning alert-dismissible fade show shadow" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>¡Atención!</strong> La calle no posee habitantes censados para poder generar un pedido.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            if (!tieneLider) {
+                alertPlaceholder.innerHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
+                        <i class="bi bi-x-circle-fill me-2"></i>
+                        <strong>¡Error!</strong> Debe registrar el <b>Jefe de Calle</b> antes de continuar.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            formularioSeleccionadoId = formId;
+            document.getElementById('textoCalleConfirmar').innerText = nombreCalle;
+            modalConfirmacion.show();
+        }
+
+        document.getElementById('btnAceptarFormPDF').addEventListener('click', function() {
+            if (formularioSeleccionadoId) {
+                modalConfirmacion.hide();
+                
+                const formulario = document.getElementById(formularioSeleccionadoId);
+                const inputs = formulario.querySelectorAll('.input-pedido');
+                
+                inputs.forEach(input => {
+                    if (input.value === '0' || input.value === '') {
+                        input.disabled = true;
+                    }
+                });
+                
+                formulario.submit();
+                
+                setTimeout(() => {
+                    inputs.forEach(input => {
+                        input.disabled = false;
+                        input.value = '0';
+                    });
+                }, 500);
+            }
+        });
+    </script>
+</body>
+</html>

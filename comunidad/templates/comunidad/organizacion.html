@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIA KM5 - Estructura Comunitaria</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+        
+        /* ESTILOS DE LA SECCIÓN DE ORGANIZACIÓN */
+        .section-card { background: white; border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); padding: 24px; transition: transform 0.3s; }
+        .comite-card { border: 1px solid #eef2f7; border-radius: 14px; transition: all 0.3s ease; background: #ffffff; }
+        .comite-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(13, 110, 253, 0.08); border-color: #0d6efd; }
+        
+        .icon-box { display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 1.3rem; }
+        .avatar-sm { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.85rem; }
+        
+        .vocero-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-left: 3px solid #dee2e6; background: #f8f9fa; border-radius: 0 8px 8px 0; font-size: 0.9rem; }
+        .vocero-row.asignado { border-left-width: 4px; background: #ffffff; }
+    </style>
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
+    <div class="container-fluid px-4">
+        <!-- Logo -->
+        <span class="navbar-brand mb-0 h1 fw-bold"><i class="bi bi-house-door-fill"></i> SIA KM5</span>
+        
+        <!-- Botón Hamburguesa -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Contenedor colapsable -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="d-flex align-items-center ms-auto flex-wrap gap-2">
+                <a href="{% url 'lista_habitantes' %}" class="btn btn-light btn-sm fw-bold text-primary px-3">
+                    <i class="bi bi-people-fill me-1"></i> Censo Habitantes
+                </a>
+                <a href="{% url 'panel_finanzas' %}" class="btn btn-light btn-sm fw-bold text-primary px-3">
+                    <i class="bi bi-cash-coin me-1"></i> Finanzas
+                </a>
+                <a href="{% url 'gestion_clap' %}" class="btn btn-light btn-sm fw-bold text-primary px-3">
+                    <i class="bi bi-basket-fill me-1"></i> CLAP
+                </a>
+                <a href="{% url 'censo_bombonas' %}" class="btn btn-light btn-sm fw-bold text-primary px-3">
+                    <i class="bi bi-fuel-pump-fill me-1"></i> Gas Comunal
+                </a>
+                <a href="{% url 'lista_proyectos' %}" class="btn btn-light btn-sm fw-bold text-primary px-3">
+                    <i class="bi bi-folder-fill me-1"></i> Proyectos
+                </a>
+                
+                <span class="text-white ms-2 me-2 small d-none d-md-inline">Usuario: <strong>{{ user.username }}</strong></span>
+                <a href="{% url 'logout' %}" class="btn btn-outline-light btn-sm">Cerrar Sesión</a>
+            </div>    
+        </div>
+    </div>
+</nav>
+
+    <div class="container mb-5">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+            <div>
+                <h2 class="fw-bold text-dark mb-1">Estructura de Organización Social</h2>
+                <p class="text-secondary mb-0">Gestión de vocerías y liderazgos asignados en el Consejo Comunal</p>
+            </div>
+            <div class="bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill shadow-sm small fw-medium">
+                <i class="bi bi-shield-fill-check me-1"></i> Período Activo
+            </div>
+        </div>
+
+        <div class="accordion border-0" id="accordionEstructura">
+            
+            <div class="accordion-item border-0 bg-transparent mb-3">
+                <h2 class="accordion-header" id="headingVocerias">
+                    <button class="accordion-button bg-white text-dark fw-bold rounded-3 shadow-sm border-0 fs-5 p-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseVocerias" aria-expanded="true" aria-controls="collapseVocerias">
+                        <i class="bi bi-people-fill text-primary me-2"></i> Unidades y Comités de Trabajo
+                    </button>
+                </h2>
+                <div id="collapseVocerias" class="accordion-collapse collapse show" aria-labelledby="headingVocerias" data-bs-parent="#accordionEstructura">
+                    <div class="accordion-body px-0 pt-3 pb-0">
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+                            {% for comite in comites %}
+                            <div class="col">
+                                <div class="comite-card p-3 h-100 shadow-sm d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="icon-box bg-primary bg-opacity-10 text-primary me-2" style="width: 40px; height: 40px;">
+                                                {% if comite.codigo == 'FINANZAS' %}
+                                                    <i class="bi bi-wallet2"></i>
+                                                {% elif comite.codigo == 'CONTRALORIA' %}
+                                                    <i class="bi bi-clipboard-check"></i>
+                                                {% elif comite.codigo == 'VIVIENDA' %}
+                                                    <i class="bi bi-house-fill"></i>
+                                                {% elif comite.codigo == 'SERVICIOS' %}
+                                                    <i class="bi bi-lightning-fill"></i>
+                                                {% elif comite.codigo == 'SALU' %}
+                                                    <i class="bi bi-heart-pulse-fill"></i>
+                                                {% elif comite.codigo == 'ALIM' %}
+                                                    <i class="bi bi-basket-fill"></i>
+                                                {% elif comite.codigo == 'ECON' %}
+                                                    <i class="bi bi-graph-up-arrow"></i>
+                                                {% elif comite.codigo == 'EDUC' %}
+                                                    <i class="bi bi-book-fill"></i>
+                                                {% elif comite.codigo == 'DEPO' %}
+                                                    <i class="bi bi-trophy-fill"></i>
+                                                {% elif comite.codigo == 'ECOS' %}
+                                                    <i class="bi bi-tree-fill"></i>
+                                                {% elif comite.codigo == 'PLAN' %}
+                                                    <i class="bi bi-diagram-3-fill"></i>
+                                                {% elif comite.codigo == 'SEG' %}
+                                                    <i class="bi bi-shield-fill-check"></i>
+                                                {% else %}
+                                                    <i class="bi bi-people-fill"></i>
+                                                {% endif %}
+                                            </div>
+                                            <span class="fw-bold text-dark lh-sm" style="font-size: 0.95rem;">{{ comite.nombre }}</span>
+                                        </div>
+
+                                        <div class="d-flex flex-column gap-2 mb-3">
+                                            <div class="vocero-row {% if comite.vocero %}asignado{% endif %}" {% if comite.vocero %}style="border-left-color: #0d6efd;"{% endif %}>
+                                                <div class="d-flex align-items-center flex-grow-1 overflow-hidden me-2">
+                                                    <div class="avatar-sm {% if comite.vocero %}bg-primary text-white{% else %}bg-light text-secondary{% endif %} me-2">
+                                                        {% if comite.vocero %}{{ comite.vocero.nombres|slice:":1"|upper }}{% else %}<i class="bi bi-person"></i>{% endif %}
+                                                    </div>
+                                                    <div class="text-truncate">
+                                                        <div class="fw-bold text-secondary style-rol text-uppercase" style="font-size:0.7rem; letter-spacing: 0.5px;">Vocero Principal</div>
+                                                        <div class="text-dark text-capitalize text-truncate">{% if comite.vocero %}{{ comite.vocero.nombres }} {{ comite.vocero.apellidos }}{% else %}<span class="text-muted small italic">Vacante</span>{% endif %}</div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    {% if comite.vocero %}
+                                                        <button type="button" class="btn btn-link text-danger p-0 border-0" onclick="abrirModalRemover('{{ comite.id_voceria_princ }}', 'Vocero Principal', '{{ comite.nombre }}')" title="Quitar cargo"><i class="bi bi-x-circle fs-5"></i></button>
+                                                    {% else %}
+                                                        <button type="button" class="btn btn-link text-primary p-0 border-0" onclick="abrirModalAsignar('{{ comite.codigo }}', '{{ comite.nombre }}', 'VOCERO')" title="Asignar"><i class="bi bi-plus-circle-fill fs-5"></i></button>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+
+                                            <div class="vocero-row {% if comite.subvocero %}asignado{% endif %}" {% if comite.subvocero %}style="border-left-color: #6c757d;"{% endif %}>
+                                                <div class="d-flex align-items-center flex-grow-1 overflow-hidden me-2">
+                                                    <div class="avatar-sm {% if comite.subvocero %}bg-secondary text-white{% else %}bg-light text-secondary{% endif %} me-2">
+                                                        {% if comite.subvocero %}{{ comite.subvocero.nombres|slice:":1"|upper }}{% else %}<i class="bi bi-person"></i>{% endif %}
+                                                    </div>
+                                                    <div class="text-truncate">
+                                                        <div class="fw-bold text-secondary style-rol text-uppercase" style="font-size:0.7rem; letter-spacing: 0.5px;">Suplente / Subvocero</div>
+                                                        <div class="text-dark text-capitalize text-truncate">{% if comite.subvocero %}{{ comite.subvocero.nombres }} {{ comite.subvocero.apellidos }}{% else %}<span class="text-muted small italic">Vacante</span>{% endif %}</div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    {% if comite.subvocero %}
+                                                        <button type="button" class="btn btn-link text-danger p-0 border-0" onclick="abrirModalRemover('{{ comite.id_voceria_sub }}', 'Suplente / Subvocero', '{{ comite.nombre }}')" title="Quitar cargo"><i class="bi bi-x-circle fs-5"></i></button>
+                                                    {% else %}
+                                                        <button type="button" class="btn btn-link text-primary p-0 border-0" onclick="abrirModalAsignar('{{ comite.codigo }}', '{{ comite.nombre }}', 'SUBVOCERO')" title="Asignar"><i class="bi bi-plus-circle-fill fs-5"></i></button>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item border-0 bg-transparent mb-3">
+                <h2 class="accordion-header" id="headingCalles">
+                    <button class="accordion-button bg-white text-dark fw-bold rounded-3 shadow-sm border-0 fs-5 p-3 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCalles" aria-expanded="false" aria-controls="collapseCalles">
+                        <i class="bi bi-geo-alt-fill text-primary me-2"></i> Jefes de Calle
+                    </button>
+                </h2>
+                <div id="collapseCalles" class="accordion-collapse collapse" aria-labelledby="headingCalles" data-bs-parent="#accordionEstructura">
+                    <div class="accordion-body px-0 pt-3 pb-0">
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-3">
+                            {% for calle in calles %}
+                            <div class="col">
+                                <div class="comite-card p-3 h-100 shadow-sm d-flex flex-column justify-content-between" style="background-color: #fafbfc;">
+                                    <div class="w-100">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="icon-box bg-primary bg-opacity-10 text-primary me-2" style="width:38px; height:38px; font-size:1.1rem;">
+                                                <i class="bi bi-signpost-split"></i>
+                                            </div>
+                                            <span class="fw-bold text-dark fs-6">{{ calle.nombre_calle }}</span>
+                                        </div>
+
+                                        <div class="vocero-row {% if calle.jefe %}asignado{% endif %} w-100 shadow-sm" style="border-left-color: #0d6efd;">
+                                            <div class="d-flex align-items-center flex-grow-1 overflow-hidden me-2 py-1">
+                                                <div class="avatar-sm {% if calle.jefe %}bg-primary text-white{% else %}bg-light text-secondary{% endif %} me-2">
+                                                    {% if calle.jefe %}{{ calle.jefe.nombres|slice:":1"|upper }}{% else %}<i class="bi bi-person-bounding-box"></i>{% endif %}
+                                                </div>
+                                                <div class="text-truncate">
+                                                    <div class="fw-bold text-secondary text-uppercase" style="font-size:0.65rem; letter-spacing: 0.5px;">Líder de Calle</div>
+                                                    <div class="text-dark text-capitalize text-truncate small fw-medium">
+                                                        {% if calle.jefe %}{{ calle.jefe.nombres }} {{ calle.jefe.apellidos }}{% else %}<span class="text-muted italic small">Sin asignar</span>{% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                {% if calle.jefe %}
+                                                    <button type="button" class="btn btn-link text-danger p-0 border-0" onclick="abrirModalRemoverJefe('{{ calle.id_jefatura }}', '{{ calle.nombre_calle }}')" title="Quitar Jefe"><i class="bi bi-dash-circle fs-5"></i></button>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if not calle.jefe %}
+                                    <div class="w-100 mt-3">
+                                        <button type="button" class="btn btn-primary btn-sm rounded-pill py-2 shadow-sm fw-medium w-100 d-flex align-items-center justify-content-center gap-1" 
+                                                onclick="abrirModalAsignarJefe('{{ calle.nombre_calle }}', [ {% for c in calle.candidatos %}{'id': '{{c.id}}', 'nombre': '{{c.nombres|escapejs}} {{c.apellidos|escapejs}}', 'cedula': '{{c.cedula}}'}{% if not forloop.last %},{% endif %}{% endfor %} ])">
+                                            <i class="bi bi-person-plus"></i> Asignar Líder
+                                        </button>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalAsignar" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 20px; border-top-right-radius: 20px;">
+                    <h5 class="modal-title fw-bold" id="modalAsignarTitulo">Asignar Cargo</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{% url 'asignar_vocero' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="comite_codigo" id="inputComiteCodigo">
+                    <input type="hidden" name="tipo_vocero" id="inputTipoVocero">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-secondary">Seleccione el Habitante:</label>
+                            <select name="habitante_id" class="form-select form-select-lg rounded-pill border-2" required>
+                                <option value="">--- Seleccionar de la lista ---</option>
+                                {% for h in todos_habitantes %}
+                                    <option value="{{ h.id }}">{{ h.nombres }} {{ h.apellidos }} (C.I: {{ h.cedula|default:"NO POSEE" }})</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text text-muted px-2 mt-2">Solo figuran los residentes registrados en el censo.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light p-3" style="border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;">
+                        <button type="button" class="btn btn-secondary btn-sm px-3 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary btn-sm px-4 rounded-pill shadow-sm">Confirmar Designación</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalRemover" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <form action="{% url 'remover_vocero' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="voceria_id" id="inputRemoverId">
+                    <div class="modal-body p-4 text-center">
+                        <i class="bi bi-exclamation-triangle text-danger display-4 mb-3 d-block"></i>
+                        <h5 class="fw-bold text-dark mb-2">¿Revocar Cargo?</h5>
+                        <p class="text-secondary small mb-0" id="textoRemoverInfo">¿Estás seguro de quitar al funcionario?</p>
+                    </div>
+                    <div class="modal-footer bg-light p-2 justify-content-center border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                        <button type="button" class="btn btn-secondary btn-sm px-3 rounded-pill" data-bs-dismiss="modal">No, mantener</button>
+                        <button type="submit" class="btn btn-danger btn-sm px-3 rounded-pill">Sí, remover</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalAsignarJefe" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 20px; border-top-right-radius: 20px;">
+                    <h5 class="modal-title fw-bold" id="modalJefeTitulo">Asignar Jefe de Calle</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{% url 'asignar_jefe_calle' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="calle_nombre" id="inputJefeCalleNombre">
+                    <div class="modal-body p-4">
+                        <div class="alert alert-info border-0 shadow-sm rounded-3 mb-3 small bg-primary bg-opacity-10 text-primary">
+                            <i class="bi bi-shield-check me-2"></i>Filtro estricto aplicado: Listando solo personas que residen legalmente en esta calle, mayores de edad y con Cédula de Identidad.
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-secondary" id="labelSelectorJefe">Habitantes calificados:</label>
+                            <select name="habitante_id" id="selectJefeHabitantes" class="form-select form-select-lg rounded-pill border-2" required>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light p-3" style="border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;">
+                        <button type="button" class="btn btn-secondary btn-sm px-3 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary btn-sm px-4 rounded-pill shadow-sm text-white">Establecer Líder</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalRemoverJefe" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <form action="{% url 'remover_jefe_calle' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="jefatura_id" id="inputRemoverJefeId">
+                    <div class="modal-body p-4 text-center">
+                        <i class="bi bi-arrow-left-right text-warning display-4 mb-3 d-block"></i>
+                        <h5 class="fw-bold text-dark mb-2">Remover jefe de Calle</h5>
+                        <p class="text-secondary small mb-0" id="textoRemoverJefeInfo">¿Desea confirmar la acción?</p>
+                    </div>
+                    <div class="modal-footer bg-light p-2 justify-content-center border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                        <button type="button" class="btn btn-secondary btn-sm px-3 rounded-pill" data-bs-dismiss="modal">No, mantener</button>
+                        <button type="submit" class="btn btn-danger btn-sm px-3 rounded-pill">Sí, remover</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const modalAsignarObjeto = new bootstrap.Modal(document.getElementById('modalAsignar'));
+        const modalRemoverObjeto = new bootstrap.Modal(document.getElementById('modalRemover'));
+
+        function abrirModalAsignar(codigo, nombreComite, tipo) {
+            document.getElementById('inputComiteCodigo').value = codigo;
+            document.getElementById('inputTipoVocero').value = tipo;
+            
+            let rolTexto = (tipo === 'VOCERO') ? 'Vocero Principal' : 'Subvocero / Suplente';
+            document.getElementById('modalAsignarTitulo').innerText = `Asignar ${rolTexto}`;
+            modalAsignarObjeto.show();
+        }
+
+        function abrirModalRemover(idVoceria, rolTexto, nombreComite) {
+            document.getElementById('inputRemoverId').value = idVoceria;
+            document.getElementById('textoRemoverInfo').innerHTML = `¿Estás seguro de que deseas quitar al <strong>${rolTexto}</strong> de la sección de <strong>${nombreComite}</strong>?`;
+            modalRemoverObjeto.show();
+        }
+
+        // CONTROLADORES JS PARA JEFATURAS DE CALLE
+        const modalAsignarJefeObjeto = new bootstrap.Modal(document.getElementById('modalAsignarJefe'));
+        const modalRemoverJefeObjeto = new bootstrap.Modal(document.getElementById('modalRemoverJefe'));
+
+        function abrirModalAsignarJefe(calleNombre, candidatos) {
+            document.getElementById('inputJefeCalleNombre').value = calleNombre;
+            document.getElementById('modalJefeTitulo').innerText = `Asignar Líder - ${calleNombre}`;
+            document.getElementById('labelSelectorJefe').innerText = `Habitantes aptos de la ${calleNombre}:`;
+            
+            const selectElement = document.getElementById('selectJefeHabitantes');
+            selectElement.innerHTML = ''; 
+            
+            if (candidatos.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = "";
+                opt.textContent = "No hay mayores de edad con Cédula en esta calle.";
+                selectElement.appendChild(opt);
+            } else {
+                const optDefault = document.createElement('option');
+                optDefault.value = "";
+                optDefault.textContent = "--- Seleccione el Jefe de Calle -----";
+                selectElement.appendChild(optDefault);
+                
+                candidatos.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = `${c.nombre} (C.I: ${c.cedula})`;
+                    selectElement.appendChild(opt);
+                });
+            }
+            modalAsignarJefeObjeto.show();
+        }
+
+        function abrirModalRemoverJefe(idJefatura, calleNombre) {
+            document.getElementById('inputRemoverJefeId').value = idJefatura;
+            document.getElementById('textoRemoverJefeInfo').innerHTML = `¿Está seguro de revocar la jefatura de la <strong>${calleNombre}</strong>? La calle quedará vacante.`;
+            modalRemoverJefeObjeto.show();
+        }
+    </script>
+</body>
+</html>

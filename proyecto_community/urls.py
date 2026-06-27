@@ -18,18 +18,18 @@ from django.urls import path, include
 from comunidad import views as comunidad_views
 
 urlpatterns = [
-    # CAMBIO CRÍTICO: Debe ser admin.site.urls
+    # Ruta de administración nativa de Django
     path('admin/', admin.site.urls), 
     
-    path('', comunidad_views.home, name='home'),
+    # CORRECCIÓN: Apunta directamente a la lista de habitantes como pantalla de inicio principal
+    path('', comunidad_views.lista_habitantes, name='home'),
+    
+    # Inclusión de las rutas específicas de la aplicación comunidad
     path('habitantes/', include('comunidad.urls')),
+    
+    # Rutas del módulo de autenticación y control de accesos
     path('login/', comunidad_views.login_usuario, name='login'),
     path('logout/', comunidad_views.logout_usuario, name='logout'),
 ]
 
-
-
 #handler403 = 'comunidad.views.error_403'
-
-
-

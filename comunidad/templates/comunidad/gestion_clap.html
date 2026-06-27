@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> SIA KM5 - Gestión CLAP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+        .card { border-radius: 14px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
+        .cursor-pointer { cursor: pointer; }
+        .selectable-jefe:hover { background-color: #f1f5f9; }
+        .check-icon { display: none; }
+        
+        /* Ajustes visuales para coincidir con Gas */
+        .calle-card { border: 1px solid #eef2f7; border-radius: 14px; background: #ffffff; transition: all 0.3s ease; }
+        .calle-card:hover { border-color: #0d6efd; box-shadow: 0 8px 25px rgba(13, 110, 253, 0.06); }
+        .icon-box { display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 1.3rem; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
+        <div class="container-fluid px-4">
+            <span class="navbar-brand mb-0 h1 fw-bold"><i class="bi bi-house-door-fill"></i> SIA KM5</span>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="d-flex align-items-center ms-auto flex-wrap gap-2">
+                    <a href="{% url 'lista_habitantes' %}" class="btn btn-light btn-sm fw-bold text-primary px-3"><i class="bi bi-people-fill me-1"></i> Censo Habitantes</a>
+                    <a href="{% url 'organizacion' %}" class="btn btn-light btn-sm fw-bold text-primary px-3"><i class="bi bi-diagram-3-fill me-1"></i> Organización</a>
+                    <a href="{% url 'panel_finanzas' %}" class="btn btn-light btn-sm fw-bold text-primary px-3"><i class="bi bi-cash-coin me-1"></i> Finanzas</a>
+                    <a href="{% url 'censo_bombonas' %}" class="btn btn-light btn-sm fw-bold text-primary px-3"><i class="bi bi-fuel-pump-fill me-1"></i> Gas Comunal</a>
+                    <a href="{% url 'lista_proyectos'%}" class="btn btn-light btn-sm fw-bold text-primary px-3"><i class="bi bi-folder-fill me-1"></i> Proyectos</a>
+                    <span class="text-white ms-2 me-2 small d-none d-md-inline">Usuario: <strong>{{ user.username }}</strong></span>
+                    <a href="{% url 'logout' %}" class="btn btn-outline-light btn-sm">Cerrar Sesión</a>
+                </div>    
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mb-5">
+        <div id="liveAlertPlaceholder"></div>
+
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+            <div>
+                <h2 class="fw-bold text-dark mb-1">Beneficio CLAP</h2>
+                <p class="text-secondary mb-0">Distribución de Alimentos</p>
+            </div>
+        </div>
+
+        <div class="row row-cols-1 row-cols-xl-2 g-4">
+            {% for calle in bloques_calles %}
+            <div class="col">
+                <form action="{% url 'exportar_clap_pdf' %}" method="GET" id="form-{{ calle.nombre_calle|slugify }}" class="h-100">
+                    <input type="hidden" name="calle" value="{{ calle.nombre_calle }}">
+                    
+                    <div class="calle-card p-4 shadow-sm h-100 d-flex flex-column">
+                        <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
+                            <div class="icon-box bg-primary bg-opacity-10 text-primary me-3" style="width: 44px; height: 44px;">
+                                <i class="bi bi-geo-alt-fill"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold text-dark mb-0">{{ calle.nombre_calle }}</h5>
+                                <span class="text-muted small">Jefes de Familia registrados: {{ calle.jefes_data|length }}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex-grow-1 overflow-auto mb-3" style="max-height: 380px; padding-right: 4px;">
+                            {% for jefe in calle.jefes_data %}
+                                <input type="checkbox" name="beneficiario_id" value="{{ jefe.id }}" id="check-input-{{ jefe.id }}" style="display:none;">
+                                <div class="d-flex align-items-center justify-content-between p-2 mb-2 border-bottom cursor-pointer selectable-jefe" 
+                                     onclick="toggleSeleccion({{ jefe.id }})">
+                                    <div>
+                                        <!-- Nombre procesado y título -->
+                                        <strong class="d-block text-dark jefe-nombre" id="nombre-{{ jefe.id }}">{{ jefe.nombres|title }} {{ jefe.apellidos|title }}</strong>
+                                        <!-- Cédula con prefijo V o E -->
+                                        <span class="text-muted small">C.I: {{ jefe.tipo_cedula|default:"V" }}-{{ jefe.cedula }}</span>
+                                    </div>
+                                    <div class="check-icon" id="check-{{ jefe.id }}">
+                                        <i class="bi bi-check-circle-fill text-primary" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mt-auto">
+                            <button type="button" class="btn btn-primary w-100 py-2 fw-bold rounded-pill" 
+                                    onclick="validarGeneracion('form-{{ calle.nombre_calle|slugify }}', {% if calle.jefe_calle %}true{% else %}false{% endif %})">
+                                <i class="bi bi-file-earmark-pdf-fill me-1"></i> Generar Planilla
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        function toggleSeleccion(id) {
+            const nombre = document.getElementById('nombre-' + id);
+            const checkIcon = document.getElementById('check-' + id);
+            const checkInput = document.getElementById('check-input-' + id);
+            
+            if (!checkInput.checked) {
+                checkInput.checked = true;
+                checkIcon.style.display = 'block';
+                nombre.classList.add('text-primary');
+            } else {
+                checkInput.checked = false;
+                checkIcon.style.display = 'none';
+                nombre.classList.remove('text-primary');
+            }
+        }
+
+        function validarGeneracion(formId, tieneLider) {
+            const alertPlaceholder = document.getElementById('liveAlertPlaceholder');
+            
+            if (!tieneLider) {
+                alertPlaceholder.innerHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
+                        <i class="bi bi-x-circle-fill me-2"></i>
+                        <strong>¡Error!</strong> Debe registrar el Jefe de Calle antes de continuar.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+            document.getElementById(formId).submit();
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

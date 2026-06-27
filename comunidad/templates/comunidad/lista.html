@@ -3,125 +3,1715 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIA KM5 - Listado</title>
+    <title>SIA KM5 - Habitantes</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.cdnfonts.com/css/digital-numbers" rel="stylesheet">
+    
     <style>
-        .stats-card { transition: transform 0.2s; border: none; border-radius: 12px; }
-        .stats-card:hover { transform: translateY(-5px); }
-        .table-container { background: white; border-radius: 15px; overflow: hidden; }
+        .btn-group .active { background-color: #0d6efd !important; color: white !important; }
+        .table-hover tbody tr:hover { background-color: #f2f7ff; }
+        .stats-card { border-left: 4px solid #0d6efd; }
+        
+        .reloj-retro {
+            background-color: white;
+            border: 4px solid #3498db; 
+            border-radius: 25px;       
+            padding: 10px 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .numeros-digitales {
+            font-family: 'Digital Numbers', sans-serif;
+            font-size: 3rem;
+            color: #333;
+            letter-spacing: 2px;
+        }
+
+        .periodo-dia {
+            display: flex;
+            flex-direction: column;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            font-size: 0.9rem;
+            line-height: 1;
+        }
+
+        .badge-count {
+            position: absolute;
+            top: -10px;
+            right: -5px;
+            font-size: 0.75rem;
+            border: 2px solid white;
+        }
+
+        .card-constancia {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .card-constancia:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #0d6efd;
+        }
+        .card-constancia.selected {
+            border-color: #0d6efd;
+            background-color: #f0f7ff;
+        }
+        .card-constancia.disabled-card {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #f8f9fa;
+        }
+        .card-constancia.disabled-card:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: transparent;
+        }
+        
+        .fallecido-texto {
+            font-size: 0.7rem;
+            color: #6c757d;
+            margin-top: 2px;
+            line-height: 1.2;
+        }
+
+        /* Flecha para miembros del núcleo familiar */
+        .flecha-familiar {
+            color: #0d6efd;
+            font-size: 1.2rem;
+            display: inline-block;
+        }
+        .sin-flecha {
+            visibility: hidden;
+        }
+
+        /* ========================================== */
+        /* ESTILOS DE LAS LISTAS DESPLEGABLES (acordeones) */
+        /* ========================================== */
+        .calle-acordeon {
+            border: 1px solid #eef2f7;
+            border-radius: 14px;
+            margin-bottom: 12px;
+            background: #ffffff;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .calle-acordeon:hover {
+            box-shadow: 0 8px 25px rgba(13, 110, 253, 0.08);
+            border-color: #0d6efd;
+        }
+        .calle-acordeon .calle-header {
+            cursor: pointer;
+            padding: 14px 20px;
+            background: #fafbfc;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .calle-acordeon .calle-header:hover {
+            background: #f0f4ff;
+        }
+        .calle-acordeon .calle-header .icon-box {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .calle-acordeon .calle-header .calle-titulo {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #1a1a2e;
+            flex: 1;
+            margin-left: 12px;
+        }
+        .calle-acordeon .calle-header .calle-flecha {
+            font-size: 1.2rem;
+            color: #6c757d;
+            transition: transform 0.3s ease;
+            margin-left: 10px;
+        }
+        .calle-acordeon .calle-header .calle-flecha.rotada {
+            transform: rotate(180deg);
+        }
+        .calle-acordeon .calle-body {
+            padding: 0;
+            background: #ffffff;
+        }
+
+        .calle-tabla {
+            font-size: 0.9rem;
+        }
+        .calle-tabla thead th {
+            background-color: #f8f9fa;
+            color: #1a1a2e;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 10px 12px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .calle-tabla tbody td {
+            padding: 8px 12px;
+            vertical-align: middle;
+            font-size: 0.9rem;
+        }
+        .calle-tabla tbody tr:hover {
+            background-color: #f8faff;
+        }
+        .calle-tabla .btn-group .btn {
+            padding: 2px 6px;
+            font-size: 0.7rem;
+        }
+        .calle-tabla .btn-group .btn i {
+            font-size: 0.9rem;
+        }
+        .calle-tabla .badge-parentesco {
+            font-size: 0.7rem;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .calle-tabla .badge-parentesco.jefe {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .calle-tabla .badge-parentesco.familiar {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+
+        .sin-habitantes {
+            padding: 20px;
+            text-align: center;
+            color: #adb5bd;
+            font-size: 0.9rem;
+        }
+        .sin-habitantes i {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        /* ========================================== */
+        /* CONTROL DE VISIBILIDAD */
+        /* ========================================== */
+        .seccion-calles {
+            display: block;
+        }
+        .seccion-calles.oculto {
+            display: none !important;
+        }
+        .seccion-tabla {
+            display: none;
+        }
+        .seccion-tabla.visible {
+            display: block;
+        }
+
+        /* Estilos para la tabla de filtros */
+        .tabla-filtros thead th {
+            background-color: #0d6efd !important;
+            color: #ffffff !important;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 10px 12px;
+            border-bottom: 2px solid #0d6efd;
+        }
+        .tabla-filtros tbody td {
+            padding: 8px 12px;
+            vertical-align: middle;
+            font-size: 0.9rem;
+        }
+        .tabla-filtros tbody tr:hover {
+            background-color: #f8faff;
+        }
+        .tabla-filtros .btn-group .btn {
+            padding: 2px 6px;
+            font-size: 0.7rem;
+        }
+        .tabla-filtros .btn-group .btn i {
+            font-size: 0.9rem;
+        }
+        .tabla-filtros .badge-parentesco-filtro {
+            font-size: 0.7rem;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .tabla-filtros .badge-parentesco-filtro.jefe {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .tabla-filtros .badge-parentesco-filtro.familiar {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+
+        /* Botones PDF por calle */
+        .pdf-calle-btn {
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #0d6efd;
+            background: transparent;
+            color: #0d6efd;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .pdf-calle-btn:hover {
+            background: #0d6efd;
+            color: white;
+            border-color: #0d6efd;
+        }
+        .pdf-calle-btn i {
+            font-size: 0.9rem;
+        }
+
+        .pdf-calle-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body class="bg-light">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{% url 'home' %}">SIA KM5</a>
-            <div class="ms-auto d-flex align-items-center">
-                <span class="text-light me-3">Usuario: <strong>{{ user.username }}</strong></span>
-                <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm">Cerrar Sesión</a>
+    <!-- ==================== NAVBAR ==================== -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
+        <div class="container-fluid px-4">
+            <span class="navbar-brand mb-0 h1 fw-bold"><i class="bi bi-house-door-fill"></i> SIA KM5</span>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="d-flex align-items-center ms-auto flex-wrap gap-2">
+                    <a href="{% url 'panel_finanzas' %}" class="btn btn-light btn-sm fw-bold text-primary px-3">
+                        <i class="bi bi-cash-coin me-1"></i> Finanzas
+                    </a>
+                    <a href="{% url 'organizacion' %}" class="btn btn-light btn-sm fw-bold text-primary px-3">
+                        <i class="bi bi-diagram-3-fill me-1"></i> Organización
+                    </a>
+                    <a href="{% url 'censo_bombonas' %}" class="btn btn-light btn-sm fw-bold text-primary px-3">
+                        <i class="bi bi-fuel-pump-fill me-1"></i> Gas Comunal
+                    </a>
+                    <a href="{% url 'gestion_clap' %}" class="btn btn-light btn-sm fw-bold text-primary px-3">
+                        <i class="bi bi-basket-fill me-1"></i> CLAP
+                    </a>
+                    <a href="{% url 'lista_proyectos'%}" class="btn btn-light btn-sm fw-bold text-primary px-3">
+                        <i class="bi bi-folder-fill me-1"></i> Proyectos
+                    </a>
+                    
+                    <span class="text-white ms-2 me-2 small d-none d-md-inline">Usuario: <strong>{{ user.username }}</strong></span>
+                    <a href="{% url 'logout' %}" class="btn btn-outline-light btn-sm">Cerrar Sesión</a>
+                </div>
             </div>
         </div>
     </nav>
 
-    <div class="container mb-5">
-        <div class="row mb-4">
-            <div class="col-md-4 mb-3">
-                <div class="card stats-card shadow-sm bg-primary text-white">
-                    <div class="card-body">
-                        <h6 class="small fw-bold">TOTAL HABITANTES</h6>
-                        <h2 class="mb-0">{{ habitantes.count }}</h2>
-                    </div>
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+            <div>
+                <h2 class="fw-bold text-dark mb-1">Censo digitalizado de habitantes</h2>
+                <p class="text-secondary mb-0">Búsqueda y filtrado de datos</p>
+            </div>
+        </div>
+
+        <div class="row mb-4 align-items-center">
+            <div class="col-lg-7">
+                <div class="card shadow-sm p-3">
+                    <form method="GET" class="input-group" id="formBusqueda">
+                        <input type="hidden" name="ver" value="{{ ver }}">
+                        <input type="hidden" name="etapa" value="{{ etapa }}">
+                        
+                        <input type="text" name="buscar" id="inputBusqueda" class="form-control form-control-lg" placeholder="Buscar por cédula o nombre..." value="{{ busqueda|default:'' }}">
+                        
+                        <!-- EL BOTÓN X SOLO APARECE CUANDO HAY BÚSQUEDA O ETAPA -->
+                        {% if busqueda or etapa %}
+                            <a href="{% url 'lista_habitantes' %}" class="btn btn-outline-secondary d-flex align-items-center" title="Limpiar filtros y salir">
+                                <i class="bi bi-x-circle"></i>
+                            </a>
+                        {% endif %}
+                        
+                        <button class="btn btn-primary px-4" type="submit"><i class="bi bi-search"></i></button>
+                    </form>
                 </div>
             </div>
-            <div class="col-md-4 mb-3">
-                <div class="card stats-card shadow-sm bg-warning text-dark">
-                    <div class="card-body">
-                        <h6 class="small fw-bold">ENFERMEDADES CRÓNICAS</h6>
-                        <h2 class="mb-0">{{ con_enfermedad }}</h2>
+            <div class="col-lg-5 text-center">
+                <div class="reloj-retro">
+                    <div id="reloj-digital" class="numeros-digitales">00:00</div>
+                    <div class="periodo-dia">
+                        <span id="txt-am">AM</span>
+                        <span id="txt-pm">PM</span>
                     </div>
                 </div>
+                <div id="fecha-actual" class="text-muted mt-2 small fw-bold text-uppercase"></div>
             </div>
-            <div class="col-md-4 mb-3">
-                <div class="card stats-card shadow-sm bg-danger text-white">
-                    <div class="card-body">
-                        <h6 class="small fw-bold">DISCAPACIDADES</h6>
-                        <h2 class="mb-0">{{ con_discapacidad }}</h2>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <div class="btn-group w-100 shadow-sm" role="group">
+                            <a href="?ver=jefes&buscar={{ busqueda }}&etapa={{ etapa }}" class="btn btn-outline-primary {% if ver == 'jefes' %}active{% endif %}">
+                                <i class="bi bi-person-badge-fill"></i> Jefes de Familia
+                            </a>
+                            <a href="?ver=todos&buscar={{ busqueda }}&etapa={{ etapa }}" class="btn btn-outline-primary {% if ver == 'todos' %}active{% endif %}">
+                                <i class="bi bi-people-fill"></i> Núcleo Familiar
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="btn-group w-100 shadow-sm" role="group">
+                            <a href="?etapa=nino&ver={{ ver }}&buscar={{ busqueda }}" class="btn btn-outline-secondary position-relative {% if etapa == 'nino' %}active{% endif %}">
+                                Niños <span class="badge rounded-pill bg-danger badge-count">{{ count_ninos }}</span>
+                            </a>
+                            <a href="?etapa=adolescente&ver={{ ver }}&buscar={{ busqueda }}" class="btn btn-outline-secondary position-relative {% if etapa == 'adolescente' %}active{% endif %}">
+                                Adolescentes <span class="badge rounded-pill bg-danger badge-count">{{ count_adolescentes }}</span>
+                            </a>
+                            <a href="?etapa=adulto&ver={{ ver }}&buscar={{ busqueda }}" class="btn btn-outline-secondary position-relative {% if etapa == 'adulto' %}active{% endif %}">
+                                Adultos <span class="badge rounded-pill bg-danger badge-count">{{ count_adultos }}</span>
+                            </a>
+                            <a href="?etapa=mayor&ver={{ ver }}&buscar={{ busqueda }}" class="btn btn-outline-secondary position-relative {% if etapa == 'mayor' %}active{% endif %}">
+                                Mayores <span class="badge rounded-pill bg-danger badge-count">{{ count_mayores }}</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body p-4">
-                <form method="GET" class="row g-3">
-                    <div class="col-lg-6 col-md-12">
-                        <input type="text" name="buscar" class="form-control form-control-lg" placeholder="Buscar por cédula o nombre..." value="{{ busqueda|default:'' }}">
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card stats-card shadow-sm h-100">
+                    <div class="card-body py-2">
+                        <small class="text-muted text-uppercase">Registrados</small>
+                        <h2 class="fw-bold mb-0 text-primary">{{ habitantes|length }}</h2>
                     </div>
-                    <div class="col-lg-2 col-md-4">
-                        <button type="submit" class="btn btn-primary btn-lg w-100">Buscar</button>
+                </div>
+            </div>
+            <div class="col-md-8 text-end">
+                <a href="{% url 'crear_habitante' %}" class="btn btn-success btn-lg shadow-sm">
+                    <i class="bi bi-plus-circle-fill"></i> Registrar
+                </a>
+                
+                <div class="dropdown d-inline-block shadow-sm ms-2">
+                    <button class="btn btn-dark btn-lg dropdown-toggle" type="button" id="dropdownMenuPDF" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-file-earmark-pdf"></i> PDF
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownMenuPDF">
+                        <li><h6 class="dropdown-header">Reportes Disponibles</h6></li>
+                        <li>
+                            <a class="dropdown-item py-2" href="{% url 'exportar_censo_pdf' %}?buscar={{ busqueda|default:'' }}&ver={{ ver }}&etapa={{ etapa }}" target="_blank">
+                                <i class="bi bi-people-fill text-primary me-2"></i>Generar listado PDF
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+<li><h6 class="dropdown-header">PDF por Calle/Sector</h6></li>
+<li>
+    <a class="dropdown-item py-2" href="{% url 'exportar_censo_pdf' %}?buscar={{ busqueda|default:'' }}&ver=todos&calle=Monjas I" target="_blank">
+        <i class="bi bi-geo-alt-fill text-danger me-2"></i>Monjas I
+    </a>
+</li>
+<li>
+    <a class="dropdown-item py-2" href="{% url 'exportar_censo_pdf' %}?buscar={{ busqueda|default:'' }}&ver=todos&calle=Monjas II" target="_blank">
+        <i class="bi bi-geo-alt-fill text-danger me-2"></i>Monjas II
+    </a>
+</li>
+<li>
+    <a class="dropdown-item py-2" href="{% url 'exportar_censo_pdf' %}?buscar={{ busqueda|default:'' }}&ver=todos&calle=Vía club Sucre" target="_blank">
+        <i class="bi bi-geo-alt-fill text-danger me-2"></i>Vía Club Sucre
+    </a>
+</li>
+<li>
+    <a class="dropdown-item py-2" href="{% url 'exportar_censo_pdf' %}?buscar={{ busqueda|default:'' }}&ver=todos&calle=Entrada Km5 vía la amistad" target="_blank">
+        <i class="bi bi-geo-alt-fill text-danger me-2"></i>Entrada Km5 vía la amistad
+    </a>
+</li>                        <li><hr class="dropdown-divider"></li>
+                        <li><h6 class="dropdown-header text-muted small">Nota: Genere las constancias individuales desde la tabla de acciones de cada habitante.</h6></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================== -->
+        <!-- SECCIÓN: ACORDEONES POR SECTOR                              -->
+        <!-- Se ocultan SOLO cuando hay busqueda o etapa                -->
+        <!-- ========================================================== -->
+        <div class="seccion-calles {% if busqueda or etapa %}oculto{% endif %}" id="seccionCalles">
+            
+            <!-- ===== MONJAS I ===== -->
+            <div class="calle-acordeon">
+                <div class="calle-header" data-bs-toggle="collapse" data-bs-target="#calleMonjasI" aria-expanded="false">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box"><i class="bi bi-geo-alt-fill"></i></div>
+                        <span class="calle-titulo">Monjas I</span>
                     </div>
-                    <div class="col-lg-2 col-md-4">
-                        <a href="{% url 'exportar_pdf' %}?buscar={{ busqueda|default:'' }}" class="btn btn-outline-danger btn-lg w-100">
-                            <i class="bi bi-file-pdf"></i> PDF
-                        </a>
+                    <i class="bi bi-chevron-down calle-flecha" id="flechaMonjasI"></i>
+                </div>
+                <div class="collapse" id="calleMonjasI">
+                    <div class="calle-body p-0">
+                        {% if ver == 'jefes' %}
+                            <!-- MODO JEFES: solo mostrar jefes -->
+                            {% if calle_monjas_i_jefes %}
+                            <div class="table-responsive">
+                                <table class="table table-hover calle-tabla mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:30px"></th>
+                                            <th>Cédula</th>
+                                            <th>Nombre Completo</th>
+                                            <th class="text-center">Género</th>
+                                            <th>Parentesco</th>
+                                            <th>Edad</th>
+                                            <th>Ubicación</th>
+                                            <th class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for h in calle_monjas_i_jefes %}
+                                        <tr>
+                                            <td class="text-center"><span class="sin-flecha">—</span></td>
+                                            <td class="fw-bold text-secondary">{{ h.cedula_formateada }}</td>
+                                            <td>
+                                                {{ h.nombres|title }} {{ h.apellidos|title }}
+                                                {% if not h.vivo %}
+                                                    <div class="fallecido-texto">(Fallecido(a))</div>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center fw-bold">{{ h.genero|default:"-" }}</td>
+                                            <td>
+                                                <span class="badge-parentesco jefe">
+                                                    {{ h.get_parentesco_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ h.edad }} años</td>
+                                            <td>
+                                                <div><i class="bi bi-geo-alt-fill text-danger"></i> {{ h.punto_referencia|default:"Sin Registrar" }}</div>
+                                                <div class="small text-muted"><i class="bi bi-telephone-fill"></i> {{ h.telefono|default:"S/N" }}</div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group shadow-sm">
+                                                    <button type="button" class="btn btn-sm btn-outline-success generar-constancia-btn" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#modalSeleccionConstancia" 
+                                                            data-habitante-id="{{ h.id }}"
+                                                            data-habitante-nombre="{{ h.nombres|title }} {{ h.apellidos|title }}"
+                                                            data-habitante-vivo="{{ h.vivo|yesno:'true,false' }}"
+                                                            data-habitante-cedula="{{ h.cedula|default:'NO POSEE' }}"
+                                                            data-habitante-fecha-nacimiento="{{ h.fecha_nacimiento|date:'d/m/Y' }}"
+                                                            title="Generar Constancia">
+                                                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                                                    </button>
+                                                    <a href="{% url 'editar_habitante' h.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                                        <i class="bi bi-eye-fill"></i>
+                                                    </a>
+                                                    {% if user.is_superuser %}
+                                                    <a href="{% url 'eliminar_habitante' h.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                                        <i class="bi bi-trash3-fill"></i>
+                                                    </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="sin-habitantes">
+                                <i class="bi bi-person-x"></i>
+                                Sin jefes de familia registrados
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            <!-- MODO NÚCLEO FAMILIAR: mostrar todos -->
+                            {% if calle_monjas_i %}
+                            <div class="table-responsive">
+                                <table class="table table-hover calle-tabla mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:30px"></th>
+                                            <th>Cédula</th>
+                                            <th>Nombre Completo</th>
+                                            <th class="text-center">Género</th>
+                                            <th>Parentesco</th>
+                                            <th>Edad</th>
+                                            <th>Ubicación</th>
+                                            <th class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for h in calle_monjas_i %}
+                                        <tr>
+                                            <td class="text-center">
+                                                {% if h.parentesco != 'JEFE' %}
+                                                    <i class="bi bi-arrow-return-right flecha-familiar"></i>
+                                                {% else %}
+                                                    <span class="sin-flecha">—</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="fw-bold text-secondary">{{ h.cedula_formateada }}</td>
+                                            <td>
+                                                {{ h.nombres|title }} {{ h.apellidos|title }}
+                                                {% if not h.vivo %}
+                                                    <div class="fallecido-texto">(Fallecido(a))</div>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center fw-bold">{{ h.genero|default:"-" }}</td>
+                                            <td>
+                                                <span class="badge-parentesco {% if h.parentesco == 'JEFE' %}jefe{% else %}familiar{% endif %}">
+                                                    {{ h.get_parentesco_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ h.edad }} años</td>
+                                            <td>
+                                                <div><i class="bi bi-geo-alt-fill text-danger"></i> {{ h.punto_referencia|default:"S/N" }}</div>
+                                                <div class="small text-muted"><i class="bi bi-telephone-fill"></i> {{ h.telefono|default:"S/N" }}</div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group shadow-sm">
+                                                    <button type="button" class="btn btn-sm btn-outline-success generar-constancia-btn" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#modalSeleccionConstancia" 
+                                                            data-habitante-id="{{ h.id }}"
+                                                            data-habitante-nombre="{{ h.nombres|title }} {{ h.apellidos|title }}"
+                                                            data-habitante-vivo="{{ h.vivo|yesno:'true,false' }}"
+                                                            data-habitante-cedula="{{ h.cedula|default:'NO POSEE' }}"
+                                                            data-habitante-fecha-nacimiento="{{ h.fecha_nacimiento|date:'d/m/Y' }}"
+                                                            title="Generar Constancia">
+                                                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                                                    </button>
+                                                    <a href="{% url 'editar_habitante' h.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                                        <i class="bi bi-eye-fill"></i>
+                                                    </a>
+                                                    {% if user.is_superuser %}
+                                                    <a href="{% url 'eliminar_habitante' h.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                                        <i class="bi bi-trash3-fill"></i>
+                                                    </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="sin-habitantes">
+                                <i class="bi bi-person-x"></i>
+                                Sin habitantes
+                            </div>
+                            {% endif %}
+                        {% endif %}
                     </div>
-                    <div class="col-lg-2 col-md-4">
-                        <a href="{% url 'lista_habitantes' %}" class="btn btn-light btn-lg w-100 border">Limpiar</a>
+                </div>
+            </div>
+
+            <!-- ===== MONJAS II ===== -->
+            <div class="calle-acordeon">
+                <div class="calle-header" data-bs-toggle="collapse" data-bs-target="#calleMonjasII" aria-expanded="false">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box"><i class="bi bi-geo-alt-fill"></i></div>
+                        <span class="calle-titulo">Monjas II</span>
+                    </div>
+                    <i class="bi bi-chevron-down calle-flecha" id="flechaMonjasII"></i>
+                </div>
+                <div class="collapse" id="calleMonjasII">
+                    <div class="calle-body p-0">
+                        {% if ver == 'jefes' %}
+                            {% if calle_monjas_ii_jefes %}
+                            <div class="table-responsive">
+                                <table class="table table-hover calle-tabla mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:30px"></th>
+                                            <th>Cédula</th>
+                                            <th>Nombre Completo</th>
+                                            <th class="text-center">Género</th>
+                                            <th>Parentesco</th>
+                                            <th>Edad</th>
+                                            <th>Ubicación</th>
+                                            <th class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for h in calle_monjas_ii_jefes %}
+                                        <tr>
+                                            <td class="text-center"><span class="sin-flecha">—</span></td>
+                                            <td class="fw-bold text-secondary">{{ h.cedula_formateada }}</td>
+                                            <td>
+                                                {{ h.nombres|title }} {{ h.apellidos|title }}
+                                                {% if not h.vivo %}
+                                                    <div class="fallecido-texto">(Fallecido(a))</div>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center fw-bold">{{ h.genero|default:"-" }}</td>
+                                            <td>
+                                                <span class="badge-parentesco jefe">
+                                                    {{ h.get_parentesco_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ h.edad }} años</td>
+                                            <td>
+                                                <div><i class="bi bi-geo-alt-fill text-danger"></i> {{ h.punto_referencia|default:"S/N" }}</div>
+                                                <div class="small text-muted"><i class="bi bi-telephone-fill"></i> {{ h.telefono|default:"S/N" }}</div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group shadow-sm">
+                                                    <button type="button" class="btn btn-sm btn-outline-success generar-constancia-btn" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#modalSeleccionConstancia" 
+                                                            data-habitante-id="{{ h.id }}"
+                                                            data-habitante-nombre="{{ h.nombres|title }} {{ h.apellidos|title }}"
+                                                            data-habitante-vivo="{{ h.vivo|yesno:'true,false' }}"
+                                                            data-habitante-cedula="{{ h.cedula|default:'NO POSEE' }}"
+                                                            data-habitante-fecha-nacimiento="{{ h.fecha_nacimiento|date:'d/m/Y' }}"
+                                                            title="Generar Constancia">
+                                                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                                                    </button>
+                                                    <a href="{% url 'editar_habitante' h.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                                        <i class="bi bi-eye-fill"></i>
+                                                    </a>
+                                                    {% if user.is_superuser %}
+                                                    <a href="{% url 'eliminar_habitante' h.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                                        <i class="bi bi-trash3-fill"></i>
+                                                    </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="sin-habitantes">
+                                <i class="bi bi-person-x"></i>
+                                Sin jefes de familia registrados
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            {% if calle_monjas_ii %}
+                            <div class="table-responsive">
+                                <table class="table table-hover calle-tabla mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:30px"></th>
+                                            <th>Cédula</th>
+                                            <th>Nombre Completo</th>
+                                            <th class="text-center">Género</th>
+                                            <th>Parentesco</th>
+                                            <th>Edad</th>
+                                            <th>Ubicación</th>
+                                            <th class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for h in calle_monjas_ii %}
+                                        <tr>
+                                            <td class="text-center">
+                                                {% if h.parentesco != 'JEFE' %}
+                                                    <i class="bi bi-arrow-return-right flecha-familiar"></i>
+                                                {% else %}
+                                                    <span class="sin-flecha">—</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="fw-bold text-secondary">{{ h.cedula_formateada }}</td>
+                                            <td>
+                                                {{ h.nombres|title }} {{ h.apellidos|title }}
+                                                {% if not h.vivo %}
+                                                    <div class="fallecido-texto">(Fallecido(a))</div>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center fw-bold">{{ h.genero|default:"-" }}</td>
+                                            <td>
+                                                <span class="badge-parentesco {% if h.parentesco == 'JEFE' %}jefe{% else %}familiar{% endif %}">
+                                                    {{ h.get_parentesco_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ h.edad }} años</td>
+                                            <td>
+                                                <div><i class="bi bi-geo-alt-fill text-danger"></i> {{ h.punto_referencia|default:"S/N" }}</div>
+                                                <div class="small text-muted"><i class="bi bi-telephone-fill"></i> {{ h.telefono|default:"S/N" }}</div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group shadow-sm">
+                                                    <button type="button" class="btn btn-sm btn-outline-success generar-constancia-btn" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#modalSeleccionConstancia" 
+                                                            data-habitante-id="{{ h.id }}"
+                                                            data-habitante-nombre="{{ h.nombres|title }} {{ h.apellidos|title }}"
+                                                            data-habitante-vivo="{{ h.vivo|yesno:'true,false' }}"
+                                                            data-habitante-cedula="{{ h.cedula|default:'NO POSEE' }}"
+                                                            data-habitante-fecha-nacimiento="{{ h.fecha_nacimiento|date:'d/m/Y' }}"
+                                                            title="Generar Constancia">
+                                                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                                                    </button>
+                                                    <a href="{% url 'editar_habitante' h.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                                        <i class="bi bi-eye-fill"></i>
+                                                    </a>
+                                                    {% if user.is_superuser %}
+                                                    <a href="{% url 'eliminar_habitante' h.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                                        <i class="bi bi-trash3-fill"></i>
+                                                    </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="sin-habitantes">
+                                <i class="bi bi-person-x"></i>
+                                Sin habitantes
+                            </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== VÍA CLUB SUCRE ===== -->
+            <div class="calle-acordeon">
+                <div class="calle-header" data-bs-toggle="collapse" data-bs-target="#calleClubSucre" aria-expanded="false">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box"><i class="bi bi-geo-alt-fill"></i></div>
+                        <span class="calle-titulo">Vía Club Sucre</span>
+                    </div>
+                    <i class="bi bi-chevron-down calle-flecha" id="flechaClubSucre"></i>
+                </div>
+                <div class="collapse" id="calleClubSucre">
+                    <div class="calle-body p-0">
+                        {% if ver == 'jefes' %}
+                            {% if calle_club_sucre_jefes %}
+                            <div class="table-responsive">
+                                <table class="table table-hover calle-tabla mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:30px"></th>
+                                            <th>Cédula</th>
+                                            <th>Nombre Completo</th>
+                                            <th class="text-center">Género</th>
+                                            <th>Parentesco</th>
+                                            <th>Edad</th>
+                                            <th>Ubicación</th>
+                                            <th class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for h in calle_club_sucre_jefes %}
+                                        <tr>
+                                            <td class="text-center"><span class="sin-flecha">—</span></td>
+                                            <td class="fw-bold text-secondary">{{ h.cedula_formateada }}</td>
+                                            <td>
+                                                {{ h.nombres|title }} {{ h.apellidos|title }}
+                                                {% if not h.vivo %}
+                                                    <div class="fallecido-texto">(Fallecido(a))</div>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center fw-bold">{{ h.genero|default:"-" }}</td>
+                                            <td>
+                                                <span class="badge-parentesco jefe">
+                                                    {{ h.get_parentesco_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ h.edad }} años</td>
+                                            <td>
+                                                <div><i class="bi bi-geo-alt-fill text-danger"></i> {{ h.punto_referencia|default:"S/N" }}</div>
+                                                <div class="small text-muted"><i class="bi bi-telephone-fill"></i> {{ h.telefono|default:"S/N" }}</div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group shadow-sm">
+                                                    <button type="button" class="btn btn-sm btn-outline-success generar-constancia-btn" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#modalSeleccionConstancia" 
+                                                            data-habitante-id="{{ h.id }}"
+                                                            data-habitante-nombre="{{ h.nombres|title }} {{ h.apellidos|title }}"
+                                                            data-habitante-vivo="{{ h.vivo|yesno:'true,false' }}"
+                                                            data-habitante-cedula="{{ h.cedula|default:'NO POSEE' }}"
+                                                            data-habitante-fecha-nacimiento="{{ h.fecha_nacimiento|date:'d/m/Y' }}"
+                                                            title="Generar Constancia">
+                                                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                                                    </button>
+                                                    <a href="{% url 'editar_habitante' h.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                                        <i class="bi bi-eye-fill"></i>
+                                                    </a>
+                                                    {% if user.is_superuser %}
+                                                    <a href="{% url 'eliminar_habitante' h.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                                        <i class="bi bi-trash3-fill"></i>
+                                                    </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="sin-habitantes">
+                                <i class="bi bi-person-x"></i>
+                                Sin jefes de familia registrados
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            {% if calle_club_sucre %}
+                            <div class="table-responsive">
+                                <table class="table table-hover calle-tabla mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:30px"></th>
+                                            <th>Cédula</th>
+                                            <th>Nombre Completo</th>
+                                            <th class="text-center">Género</th>
+                                            <th>Parentesco</th>
+                                            <th>Edad</th>
+                                            <th>Ubicación</th>
+                                            <th class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for h in calle_club_sucre %}
+                                        <tr>
+                                            <td class="text-center">
+                                                {% if h.parentesco != 'JEFE' %}
+                                                    <i class="bi bi-arrow-return-right flecha-familiar"></i>
+                                                {% else %}
+                                                    <span class="sin-flecha">—</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="fw-bold text-secondary">{{ h.cedula_formateada }}</td>
+                                            <td>
+                                                {{ h.nombres|title }} {{ h.apellidos|title }}
+                                                {% if not h.vivo %}
+                                                    <div class="fallecido-texto">(Fallecido(a))</div>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center fw-bold">{{ h.genero|default:"-" }}</td>
+                                            <td>
+                                                <span class="badge-parentesco {% if h.parentesco == 'JEFE' %}jefe{% else %}familiar{% endif %}">
+                                                    {{ h.get_parentesco_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ h.edad }} años</td>
+                                            <td>
+                                                <div><i class="bi bi-geo-alt-fill text-danger"></i> {{ h.punto_referencia|default:"S/N" }}</div>
+                                                <div class="small text-muted"><i class="bi bi-telephone-fill"></i> {{ h.telefono|default:"S/N" }}</div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group shadow-sm">
+                                                    <button type="button" class="btn btn-sm btn-outline-success generar-constancia-btn" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#modalSeleccionConstancia" 
+                                                            data-habitante-id="{{ h.id }}"
+                                                            data-habitante-nombre="{{ h.nombres|title }} {{ h.apellidos|title }}"
+                                                            data-habitante-vivo="{{ h.vivo|yesno:'true,false' }}"
+                                                            data-habitante-cedula="{{ h.cedula|default:'NO POSEE' }}"
+                                                            data-habitante-fecha-nacimiento="{{ h.fecha_nacimiento|date:'d/m/Y' }}"
+                                                            title="Generar Constancia">
+                                                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                                                    </button>
+                                                    <a href="{% url 'editar_habitante' h.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                                        <i class="bi bi-eye-fill"></i>
+                                                    </a>
+                                                    {% if user.is_superuser %}
+                                                    <a href="{% url 'eliminar_habitante' h.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                                        <i class="bi bi-trash3-fill"></i>
+                                                    </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="sin-habitantes">
+                                <i class="bi bi-person-x"></i>
+                                Sin habitantes
+                            </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ENTRADA KM5 ===== -->
+            <div class="calle-acordeon">
+                <div class="calle-header" data-bs-toggle="collapse" data-bs-target="#calleEntradaKm5" aria-expanded="false">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box"><i class="bi bi-geo-alt-fill"></i></div>
+                        <span class="calle-titulo">Entrada Km5 vía la amistad</span>
+                    </div>
+                    <i class="bi bi-chevron-down calle-flecha" id="flechaEntradaKm5"></i>
+                </div>
+                <div class="collapse" id="calleEntradaKm5">
+                    <div class="calle-body p-0">
+                        {% if ver == 'jefes' %}
+                            {% if calle_entrada_km5_jefes %}
+                            <div class="table-responsive">
+                                <table class="table table-hover calle-tabla mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:30px"></th>
+                                            <th>Cédula</th>
+                                            <th>Nombre Completo</th>
+                                            <th class="text-center">Género</th>
+                                            <th>Parentesco</th>
+                                            <th>Edad</th>
+                                            <th>Ubicación</th>
+                                            <th class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for h in calle_entrada_km5_jefes %}
+                                        <tr>
+                                            <td class="text-center"><span class="sin-flecha">—</span></td>
+                                            <td class="fw-bold text-secondary">{{ h.cedula_formateada }}</td>
+                                            <td>
+                                                {{ h.nombres|title }} {{ h.apellidos|title }}
+                                                {% if not h.vivo %}
+                                                    <div class="fallecido-texto">(Fallecido(a))</div>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center fw-bold">{{ h.genero|default:"-" }}</td>
+                                            <td>
+                                                <span class="badge-parentesco jefe">
+                                                    {{ h.get_parentesco_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ h.edad }} años</td>
+                                            <td>
+                                                <div><i class="bi bi-geo-alt-fill text-danger"></i> {{ h.punto_referencia|default:"S/N" }}</div>
+                                                <div class="small text-muted"><i class="bi bi-telephone-fill"></i> {{ h.telefono|default:"S/N" }}</div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group shadow-sm">
+                                                    <button type="button" class="btn btn-sm btn-outline-success generar-constancia-btn" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#modalSeleccionConstancia" 
+                                                            data-habitante-id="{{ h.id }}"
+                                                            data-habitante-nombre="{{ h.nombres|title }} {{ h.apellidos|title }}"
+                                                            data-habitante-vivo="{{ h.vivo|yesno:'true,false' }}"
+                                                            data-habitante-cedula="{{ h.cedula|default:'NO POSEE' }}"
+                                                            data-habitante-fecha-nacimiento="{{ h.fecha_nacimiento|date:'d/m/Y' }}"
+                                                            title="Generar Constancia">
+                                                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                                                    </button>
+                                                    <a href="{% url 'editar_habitante' h.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                                        <i class="bi bi-eye-fill"></i>
+                                                    </a>
+                                                    {% if user.is_superuser %}
+                                                    <a href="{% url 'eliminar_habitante' h.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                                        <i class="bi bi-trash3-fill"></i>
+                                                    </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="sin-habitantes">
+                                <i class="bi bi-person-x"></i>
+                                Sin jefes de familia registrados
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            {% if calle_entrada_km5 %}
+                            <div class="table-responsive">
+                                <table class="table table-hover calle-tabla mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:30px"></th>
+                                            <th>Cédula</th>
+                                            <th>Nombre Completo</th>
+                                            <th class="text-center">Género</th>
+                                            <th>Parentesco</th>
+                                            <th>Edad</th>
+                                            <th>Ubicación</th>
+                                            <th class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for h in calle_entrada_km5 %}
+                                        <tr>
+                                            <td class="text-center">
+                                                {% if h.parentesco != 'JEFE' %}
+                                                    <i class="bi bi-arrow-return-right flecha-familiar"></i>
+                                                {% else %}
+                                                    <span class="sin-flecha">—</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="fw-bold text-secondary">{{ h.cedula_formateada }}</td>
+                                            <td>
+                                                {{ h.nombres|title }} {{ h.apellidos|title }}
+                                                {% if not h.vivo %}
+                                                    <div class="fallecido-texto">(Fallecido(a))</div>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center fw-bold">{{ h.genero|default:"-" }}</td>
+                                            <td>
+                                                <span class="badge-parentesco {% if h.parentesco == 'JEFE' %}jefe{% else %}familiar{% endif %}">
+                                                    {{ h.get_parentesco_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ h.edad }} años</td>
+                                            <td>
+                                                <div><i class="bi bi-geo-alt-fill text-danger"></i> {{ h.punto_referencia|default:"S/N" }}</div>
+                                                <div class="small text-muted"><i class="bi bi-telephone-fill"></i> {{ h.telefono|default:"S/N" }}</div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group shadow-sm">
+                                                    <button type="button" class="btn btn-sm btn-outline-success generar-constancia-btn" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#modalSeleccionConstancia" 
+                                                            data-habitante-id="{{ h.id }}"
+                                                            data-habitante-nombre="{{ h.nombres|title }} {{ h.apellidos|title }}"
+                                                            data-habitante-vivo="{{ h.vivo|yesno:'true,false' }}"
+                                                            data-habitante-cedula="{{ h.cedula|default:'NO POSEE' }}"
+                                                            data-habitante-fecha-nacimiento="{{ h.fecha_nacimiento|date:'d/m/Y' }}"
+                                                            title="Generar Constancia">
+                                                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                                                    </button>
+                                                    <a href="{% url 'editar_habitante' h.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                                        <i class="bi bi-eye-fill"></i>
+                                                    </a>
+                                                    {% if user.is_superuser %}
+                                                    <a href="{% url 'eliminar_habitante' h.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                                        <i class="bi bi-trash3-fill"></i>
+                                                    </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="sin-habitantes">
+                                <i class="bi bi-person-x"></i>
+                                Sin habitantes
+                            </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ========================================================== -->
+        <!-- SECCIÓN: TABLA PLANA (visible cuando hay busqueda o etapa)  -->
+        <!-- ========================================================== -->
+        <div class="seccion-tabla {% if busqueda or etapa %}visible{% endif %}" id="seccionTabla">
+            <div class="card shadow border-0 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 tabla-filtros" id="tablaHabitantes">
+                        <thead>
+                            <tr>
+                                <th style="width:40px"></th>
+                                <th>Cédula</th>
+                                <th>Nombre Completo</th>
+                                <th class="text-center">Género</th>
+                                {% if not request.GET.etapa and not request.GET.buscar %}
+                                <th>Parentesco</th>
+                                {% endif %}
+                                <th>Edad</th>
+                                <th>Ubicación / Teléfono</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for h in habitantes %}
+                            <tr>
+                                <td class="text-center">
+                                    {% if not request.GET.etapa and not request.GET.buscar %}
+                                        {% if h.parentesco != 'JEFE' %}
+                                            <i class="bi bi-arrow-return-right flecha-familiar"></i>
+                                        {% else %}
+                                            <span class="sin-flecha">—</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="sin-flecha">—</span>
+                                    {% endif %}
+                                </td>
+                                <td class="fw-bold text-secondary">{{ h.cedula_formateada }}</td>
+                                <td>
+                                    {{ h.nombres|title }} {{ h.apellidos|title }}
+                                    {% if not h.vivo %}
+                                        <div class="fallecido-texto">(Fallecido(a))</div>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center fw-bold">{{ h.genero|default:"-" }}</td>
+                                {% if not request.GET.etapa and not request.GET.buscar %}
+                                <td>
+                                    <span class="badge-parentesco-filtro {% if h.parentesco == 'JEFE' %}jefe{% else %}familiar{% endif %}">
+                                        {{ h.get_parentesco_display }}
+                                    </span>
+                                </td>
+                                {% endif %}
+                                <td>{{ h.edad }} años</td>
+                                <td>
+                                    <div><i class="bi bi-geo-alt-fill text-danger"></i> {{ h.calle_sector }}</div>
+                                    <div class="small text-muted"><i class="bi bi-telephone-fill"></i> {{ h.telefono|default:"S/N" }}</div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group shadow-sm">
+                                        <button type="button" class="btn btn-sm btn-outline-success generar-constancia-btn" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#modalSeleccionConstancia" 
+                                                data-habitante-id="{{ h.id }}"
+                                                data-habitante-nombre="{{ h.nombres|title }} {{ h.apellidos|title }}"
+                                                data-habitante-vivo="{{ h.vivo|yesno:'true,false' }}"
+                                                data-habitante-cedula="{{ h.cedula|default:'NO POSEE' }}"
+                                                data-habitante-fecha-nacimiento="{{ h.fecha_nacimiento|date:'d/m/Y' }}"
+                                                title="Generar Constancia">
+                                            <i class="bi bi-file-earmark-pdf-fill"></i>
+                                        </button>
+                                        <a href="{% url 'editar_habitante' h.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                            <i class="bi bi-eye-fill"></i>
+                                        </a>
+                                        {% if user.is_superuser %}
+                                        <a href="{% url 'eliminar_habitante' h.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bi bi-search fs-2"></i>
+                                    <p class="mt-2">No se encontraron resultados.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- ==================== MODALES ============================== -->
+    <!-- ========================================================== -->
+
+    <!-- MODAL: Selección de Constancia -->
+    <div class="modal fade" id="modalSeleccionConstancia" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-file-earmark-pdf-fill me-2"></i> Seleccionar tipo de documento
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Habitante:</label>
+                        <p class="border-bottom pb-2" id="nombreHabitanteSeleccion">-</p>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card card-constancia" data-tipo="residencia" data-url="{% url 'generar_constancia' 0 %}" data-requiere-motivo="true">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-house-door-fill fs-1 text-primary mb-2"></i>
+                                    <h5 class="card-title mb-0">Constancia de Residencia</h5>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card card-constancia" data-tipo="comercial" data-url="{% url 'generar_carta_aval' 0 %}" data-requiere-motivo="false">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-shop-window fs-1 text-success mb-2"></i>
+                                    <h5 class="card-title mb-0">Carta Aval Comercial</h5>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card card-constancia" data-tipo="fallecimiento" data-url="{% url 'constancia_fallecimiento' 0 %}" data-requiere-motivo="false" data-es-fallecimiento="true">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-calendar-x-fill fs-1 text-danger mb-2"></i>
+                                    <h5 class="card-title mb-0">Constancia de Fallecimiento</h5>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card card-constancia" data-tipo="conducta" data-url="{% url 'carta_buena_conducta' 0 %}" data-requiere-motivo="true">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-hand-thumbs-up-fill fs-1 text-secondary mb-2"></i>
+                                    <h5 class="card-title mb-0">Carta de Buena Conducta</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Motivo -->
+    <div class="modal fade" id="modalMotivoConstancia" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalMotivoTitulo">
+                        <i class="bi bi-pencil-square me-2"></i> Constancia - Motivo
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Habitante:</label>
+                        <p class="border-bottom pb-2" id="nombreHabitanteMotivo">-</p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="motivoConstancia" class="form-label fw-bold">Ingrese el motivo</label>
+                        <textarea class="form-control" id="motivoConstancia" rows="3" 
+                                  placeholder="Escriba aquí el motivo..." 
+                                  style="width: 100%; resize: vertical;"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="button" id="btnGenerarConstanciaFinal" class="btn btn-primary">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> Generar Constancia
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Fallecimiento -->
+    <div class="modal fade" id="modalFallecimiento" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-calendar-x-fill me-2"></i> Constancia de Fallecimiento
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formFallecimiento" method="GET" action="{% url 'constancia_fallecimiento' 0 %}" target="_blank">
+                    <div class="modal-body">
+                        <input type="hidden" id="habitanteIdFallecimiento" name="habitante_id">
+                        <input type="hidden" name="recargar" value="true">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">🕐 Hora del Fallecimiento</label>
+                            <select class="form-select" id="hora_fallecimiento" name="hora_fallecimiento" required>
+                                <option value="">Seleccione una hora</option>
+                            </select>
+                            <div class="form-text text-muted">Se ingresará la fecha de hoy</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">📝 Causa del Fallecimiento</label>
+                            <textarea class="form-control" id="causa_fallecimiento" name="causa_fallecimiento" rows="3" required 
+                                      placeholder="Ingrese causa"></textarea>
+                        </div>
+
+                        <div class="alert alert-warning small">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i> 
+                            Asegure ingresar los datos correctamente! No podrá generarse nuevamente con datos diferentes!
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-file-earmark-pdf-fill"></i> Generar Constancia
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
-
-        <div class="table-container shadow-sm">
-            <div class="bg-white p-4 border-bottom d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold text-secondary">Registros del Censo</h5>
-                
-                {% if user.is_superuser or user.groups.all.0.name == 'Operador' %}
-                <a href="{% url 'crear_habitante' %}" class="btn btn-success">
-                    <i class="bi bi-plus-lg"></i> Registrar Nuevo
-                </a>
-                {% endif %}
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">Cédula</th>
-                            <th>Nombre</th>
-                            <th>Ubicación</th>
-                            <th class="text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for h in habitantes %}
-                        <tr>
-                            <td class="ps-4 fw-bold">{{ h.cedula }}</td>
-                            <td>{{ h.nombres }} {{ h.apellidos }}</td>
-                            <td><span class="badge bg-light text-dark border">{{ h.calle_sector }}</span></td>
-                            <td class="text-center">
-                                <div class="btn-group">
-                                    {% if user.is_superuser or user.groups.all.0.name == 'Operador' %}
-                                    <a href="{% url 'editar_habitante' h.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    {% endif %}
-
-                                    {% if user.is_superuser %}
-                                    <a href="{% url 'eliminar_habitante' h.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="4" class="text-center py-5 text-muted">No hay registros coincidentes.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
+
+    <!-- ==================== SCRIPTS ==================== -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let horaActualGlobal = 0;
+        let minutoActualGlobal = 0;
+
+        function actualizarReloj() {
+            const ahora = new Date();
+            let horas = ahora.getHours();
+            let minutes = ahora.getMinutes();
+            const ampm = horas >= 12 ? 'PM' : 'AM';
+            
+            horaActualGlobal = horas;
+            minutoActualGlobal = minutes;
+            
+            horas = horas % 12 || 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            horas = horas < 10 ? '0' + horas : horas;
+
+            document.getElementById('reloj-digital').textContent = horas + ':' + minutes;
+
+            const txtAm = document.getElementById('txt-am');
+            const txtPm = document.getElementById('txt-pm');
+            
+            if (ampm === 'AM') {
+                txtAm.style.color = '#e74c3c'; 
+                txtPm.style.color = '#bdc3c7';
+            } else {
+                txtAm.style.color = '#bdc3c7';
+                txtPm.style.color = '#e74c3c';
+            }
+
+            const opciones = { weekday: 'long', day: 'numeric', month: 'long' };
+            document.getElementById('fecha-actual').textContent = ahora.toLocaleDateString('es-VE', opciones);
+        }
+        setInterval(actualizarReloj, 1000);
+        actualizarReloj();
+
+        function generarOpcionesHoras() {
+            const ahora = new Date();
+            const horaActual = ahora.getHours();
+            
+            const todasLasHoras = [
+                { valor: "24", texto: "12:00 AM", hora24: 0 },
+                { valor: "1", texto: "1:00 AM", hora24: 1 },
+                { valor: "2", texto: "2:00 AM", hora24: 2 },
+                { valor: "3", texto: "3:00 AM", hora24: 3 },
+                { valor: "4", texto: "4:00 AM", hora24: 4 },
+                { valor: "5", texto: "5:00 AM", hora24: 5 },
+                { valor: "6", texto: "6:00 AM", hora24: 6 },
+                { valor: "7", texto: "7:00 AM", hora24: 7 },
+                { valor: "8", texto: "8:00 AM", hora24: 8 },
+                { valor: "9", texto: "9:00 AM", hora24: 9 },
+                { valor: "10", texto: "10:00 AM", hora24: 10 },
+                { valor: "11", texto: "11:00 AM", hora24: 11 },
+                { valor: "12", texto: "12:00 PM", hora24: 12 },
+                { valor: "13", texto: "1:00 PM", hora24: 13 },
+                { valor: "14", texto: "2:00 PM", hora24: 14 },
+                { valor: "15", texto: "3:00 PM", hora24: 15 },
+                { valor: "16", texto: "4:00 PM", hora24: 16 },
+                { valor: "17", texto: "5:00 PM", hora24: 17 },
+                { valor: "18", texto: "6:00 PM", hora24: 18 },
+                { valor: "19", texto: "7:00 PM", hora24: 19 },
+                { valor: "20", texto: "8:00 PM", hora24: 20 },
+                { valor: "21", texto: "9:00 PM", hora24: 21 },
+                { valor: "22", texto: "10:00 PM", hora24: 22 },
+                { valor: "23", texto: "11:00 PM", hora24: 23 }
+            ];
+            
+            return todasLasHoras.filter(hora => hora.hora24 <= horaActual);
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            let habitanteIdActual = null;
+            let habitanteNombreActual = "";
+            let habitanteVivoActual = true;
+            let habitanteCedulaActual = "";
+            let habitanteFechaNacimientoActual = "";
+            let urlSeleccionada = "";
+            let requiereMotivo = false;
+            let esFallecimiento = false;
+            
+            const selectHora = document.getElementById('hora_fallecimiento');
+            if (selectHora) {
+                const opciones = generarOpcionesHoras();
+                selectHora.innerHTML = '<option value="">Seleccione una hora</option>';
+                opciones.forEach(hora => {
+                    const option = document.createElement('option');
+                    option.value = hora.valor;
+                    option.textContent = hora.texto;
+                    selectHora.appendChild(option);
+                });
+            }
+
+            // ============ FUNCIÓN PARA CALCULAR EDAD ============
+            function calcularEdad(fechaNacimientoStr) {
+                if (!fechaNacimientoStr) return 0;
+                try {
+                    const partes = fechaNacimientoStr.split('/');
+                    if (partes.length !== 3) return 0;
+                    const dia = parseInt(partes[0], 10);
+                    const mes = parseInt(partes[1], 10) - 1;
+                    const anio = parseInt(partes[2], 10);
+                    const fechaNac = new Date(anio, mes, dia);
+                    const hoy = new Date();
+                    let edad = hoy.getFullYear() - fechaNac.getFullYear();
+                    const mesDiff = hoy.getMonth() - fechaNac.getMonth();
+                    if (mesDiff < 0 || (mesDiff === 0 && hoy.getDate() < fechaNac.getDate())) {
+                        edad--;
+                    }
+                    return edad;
+                } catch (e) {
+                    return 0;
+                }
+            }
+
+            // ============ FUNCIÓN PARA VERIFICAR SI PUEDE GENERAR CARTA AVAL ============
+            function puedeGenerarCartaAval(cedula, fechaNacimiento) {
+                const edad = calcularEdad(fechaNacimiento);
+                const esMayorEdad = edad >= 18;
+                const cedulaLimpia = cedula ? cedula.trim() : '';
+                const esNoPosee = cedulaLimpia === '' || cedulaLimpia === 'NO POSEE' || cedulaLimpia === 'None' || cedulaLimpia === 'null';
+                const tieneCedulaValida = !esNoPosee;
+                return esMayorEdad && tieneCedulaValida;
+            }
+            
+            const modalSeleccion = document.getElementById('modalSeleccionConstancia');
+            if (modalSeleccion) {
+                modalSeleccion.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    habitanteIdActual = button.getAttribute('data-habitante-id');
+                    habitanteNombreActual = button.getAttribute('data-habitante-nombre');
+                    habitanteVivoActual = button.getAttribute('data-habitante-vivo') === 'true';
+                    habitanteCedulaActual = button.getAttribute('data-habitante-cedula') || '';
+                    habitanteFechaNacimientoActual = button.getAttribute('data-habitante-fecha-nacimiento') || '';
+                    
+                    const nombreSpan = document.getElementById('nombreHabitanteSeleccion');
+                    if (nombreSpan) {
+                        nombreSpan.innerHTML = `<strong>${habitanteNombreActual}</strong>`;
+                    }
+                    
+                    urlSeleccionada = "";
+                    requiereMotivo = false;
+                    esFallecimiento = false;
+                    
+                    const puedeAval = puedeGenerarCartaAval(habitanteCedulaActual, habitanteFechaNacimientoActual);
+                    const edad = calcularEdad(habitanteFechaNacimientoActual);
+                    const cedulaLimpia = habitanteCedulaActual ? habitanteCedulaActual.trim() : '';
+                    const esNoPosee = cedulaLimpia === '' || cedulaLimpia === 'NO POSEE' || cedulaLimpia === 'None' || cedulaLimpia === 'null';
+                    const tieneCedulaValida = !esNoPosee;
+                    
+                    document.querySelectorAll('.card-constancia').forEach(card => {
+                        card.classList.remove('selected', 'disabled-card');
+                        const tipo = card.getAttribute('data-tipo');
+                        
+                        if (!habitanteVivoActual && tipo !== 'fallecimiento') {
+                            card.classList.add('disabled-card');
+                            card.style.cursor = 'not-allowed';
+                            card.removeAttribute('data-razon');
+                        }
+                        else if (tipo === 'comercial' && !puedeAval) {
+                            card.classList.add('disabled-card');
+                            card.style.cursor = 'not-allowed';
+                            let razon = '';
+                            if (!tieneCedulaValida) {
+                                razon = 'Requiere cédula de identidad';
+                            } else if (edad < 18) {
+                                razon = 'Requiere ser mayor de edad';
+                            } else {
+                                razon = 'No cumple con las condiciones requeridas';
+                            }
+                            card.setAttribute('data-razon', razon);
+                        }
+                        else if (tipo === 'comercial' && puedeAval) {
+                            card.style.cursor = 'pointer';
+                            card.removeAttribute('data-razon');
+                        }
+                        else {
+                            card.style.cursor = 'pointer';
+                            card.removeAttribute('data-razon');
+                        }
+                    });
+                });
+            }
+            
+            document.querySelectorAll('.card-constancia').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    const urlBase = this.getAttribute('data-url');
+                    const requiere = this.getAttribute('data-requiere-motivo') === 'true';
+                    const esFallec = this.getAttribute('data-es-fallecimiento') === 'true';
+                    const tipoNombre = this.querySelector('h5').innerText;
+                    
+                    if (this.classList.contains('disabled-card')) {
+                        const razon = this.getAttribute('data-razon') || 'No disponible para este habitante.';
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'alert alert-danger alert-dismissible fade show mt-2';
+                        errorDiv.innerHTML = `
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>No disponible:</strong> ${razon}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        `;
+                        document.querySelector('#modalSeleccionConstancia .modal-body').appendChild(errorDiv);
+                        setTimeout(() => errorDiv.remove(), 4000);
+                        return;
+                    }
+                    
+                    if (urlBase === "#") {
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'alert alert-warning alert-dismissible fade show mt-2';
+                        errorDiv.innerHTML = `
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>${tipoNombre}</strong> estará disponible próximamente.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        `;
+                        document.querySelector('#modalSeleccionConstancia .modal-body').appendChild(errorDiv);
+                        setTimeout(() => errorDiv.remove(), 3000);
+                        return;
+                    }
+                    
+                    document.querySelectorAll('.card-constancia').forEach(c => {
+                        c.classList.remove('selected');
+                    });
+                    
+                    this.classList.add('selected');
+                    urlSeleccionada = urlBase;
+                    requiereMotivo = requiere;
+                    esFallecimiento = esFallec;
+                    
+                    const modalSeleccionInstance = bootstrap.Modal.getInstance(modalSeleccion);
+                    modalSeleccionInstance.hide();
+                    
+                    if (esFallecimiento) {
+                        if (!habitanteVivoActual) {
+                            const url = urlSeleccionada.replace('0', habitanteIdActual);
+                            window.open(url, '_blank');
+                        } else {
+                            const modalFallecimiento = new bootstrap.Modal(document.getElementById('modalFallecimiento'));
+                            const form = document.getElementById('formFallecimiento');
+                            const urlCorrecta = "{% url 'constancia_fallecimiento' 0 %}".replace('0', habitanteIdActual);
+                            form.action = urlCorrecta;
+                            document.getElementById('habitanteIdFallecimiento').value = habitanteIdActual;
+                            modalFallecimiento.show();
+                        }
+                    } else if (requiereMotivo) {
+                        const tituloModal = document.getElementById('modalMotivoTitulo');
+                        if (tituloModal) {
+                            tituloModal.innerHTML = `<i class="bi bi-pencil-square me-2"></i> ${tipoNombre} - Motivo`;
+                        }
+                        const modalMotivo = new bootstrap.Modal(document.getElementById('modalMotivoConstancia'));
+                        modalMotivo.show();
+                    } else {
+                        const url = urlSeleccionada.replace('0', habitanteIdActual);
+                        window.open(url, '_blank');
+                    }
+                });
+            });
+            
+            const modalMotivo = document.getElementById('modalMotivoConstancia');
+            if (modalMotivo) {
+                modalMotivo.addEventListener('show.bs.modal', function() {
+                    const nombreSpan = document.getElementById('nombreHabitanteMotivo');
+                    if (nombreSpan) {
+                        nombreSpan.innerHTML = `<strong>${habitanteNombreActual}</strong>`;
+                    }
+                    document.getElementById('motivoConstancia').value = '';
+                });
+            }
+            
+            const btnGenerarFinal = document.getElementById('btnGenerarConstanciaFinal');
+            if (btnGenerarFinal) {
+                btnGenerarFinal.addEventListener('click', function() {
+                    const motivo = document.getElementById('motivoConstancia').value.trim();
+                    
+                    if (!urlSeleccionada) {
+                        return;
+                    }
+                    
+                    if (!motivo) {
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'alert alert-danger alert-dismissible fade show mt-2';
+                        errorDiv.innerHTML = `
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            Por favor, ingrese el motivo de la constancia.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        `;
+                        document.querySelector('#modalMotivoConstancia .modal-body').appendChild(errorDiv);
+                        setTimeout(() => errorDiv.remove(), 3000);
+                        return;
+                    }
+                    
+                    const url = urlSeleccionada.replace('0', habitanteIdActual) + `?motivo=${encodeURIComponent(motivo)}`;
+                    window.open(url, '_blank');
+                    
+                    const modal = bootstrap.Modal.getInstance(modalMotivo);
+                    modal.hide();
+                    document.getElementById('motivoConstancia').value = '';
+                });
+            }
+            
+            const formFallecimiento = document.getElementById('formFallecimiento');
+            if (formFallecimiento) {
+                formFallecimiento.addEventListener('submit', function() {
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 2000);
+                });
+            }
+
+            // ==========================================
+            // ROTACIÓN DE FLECHAS EN ACORDEONES
+            // ==========================================
+            document.querySelectorAll('.calle-header').forEach(header => {
+                const targetId = header.getAttribute('data-bs-target');
+                const collapseEl = document.querySelector(targetId);
+                const flecha = header.querySelector('.calle-flecha');
+                
+                if (collapseEl && flecha) {
+                    if (collapseEl.classList.contains('show')) {
+                        flecha.classList.add('rotada');
+                    }
+                    
+                    collapseEl.addEventListener('show.bs.collapse', function() {
+                        flecha.classList.add('rotada');
+                    });
+                    collapseEl.addEventListener('hide.bs.collapse', function() {
+                        flecha.classList.remove('rotada');
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      color: #1a1a1a;
+      padding: 40px 60px;
+      line-height: 1.6;
+      background: white;
+      position: relative;
+    }
+
+    .header-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+
+    .header-table td {
+      vertical-align: middle;
+    }
+
+    .header-text p {
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .divider {
+      border: 0;
+      border-top: 1px solid #000;
+      margin: 10px 0 20px 0;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin: 0 0 20px 0;
+      text-decoration: underline;
+    }
+
+    /* Nueva clase para el número de constancia - SIN negrita y SIN subrayado */
+    .numero-constancia {
+      text-align: center;
+      font-size: 16px;
+      font-weight: normal;
+      text-transform: uppercase;
+      margin: -15px 0 20px 0;
+      text-decoration: none;
+    }
+
+    .paragraph {
+      text-align: justify;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+
+    /* Reducimos el margen inferior para acercar la sección de firmas */
+    .space-4 {
+      margin-bottom: 50px;
+    }
+
+    .signatures-label {
+      text-align: center;
+      font-size: 13px;
+      font-weight: bold;
+      margin-top: 30px;  /* Reducido de 60px a 30px */
+    }
+
+    .sig-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;  /* Reducido de 40px a 20px */
+    }
+
+    .sig-cell {
+      width: 50%;
+      vertical-align: top;
+      text-align: center;
+      padding-top: 15px;  /* Reducido de 20px a 15px */
+      padding-bottom: 20px; /* Reducido de 30px a 20px */
+    }
+
+    .signature-line {
+      border-top: 2px solid #000;
+      width: 200px;
+      margin: 0 auto 8px auto;
+    }
+
+    .signature-name {
+      font-weight: bold;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .signature-info {
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .signature-role {
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: bold;
+      margin-top: 4px;
+    }
+
+    .sig-cell-full {
+      text-align: center;
+      padding-top: 15px;  /* Reducido de 50px a 15px */
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 60px;  /* Reducido de 60px a 40px */
+      font-weight: bold;
+      text-transform: uppercase;
+      width: 100%;
+      font-size: 12px;
+      letter-spacing: 1px;
+      margin-left: -40px;
+    }
+
+    @media print {
+      .signature-line {
+        border-top: 2px solid black;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ========================================================= -->
+<!-- === MARCA DE AGUA CON IMAGEN (COMPATIBLE CON xhtml2pdf) === -->
+<!-- === PARA OCULTAR LA MARCA DE AGUA, ELIMINA O COMENTA === -->
+<!-- === LAS LÍNEAS QUE ESTÁN DENTRO DE ESTE BLOQUE === -->
+<!-- ========================================================= -->
+<!-- 
+<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; text-align: center; vertical-align: middle; display: table-cell;">
+    <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+        <img src="/static/img/marca_agua.jpg" style="opacity: 0.1; width: 60%; transform: rotate(-25deg);" />
+    </div>
+</div>
+-->
+<!-- ========================================================= -->
+<!-- === FIN DE LA MARCA DE AGUA === -->
+<!-- ========================================================= -->
+
+<div class="content">
+  <table class="header-table">
+    <tr>
+      <td style="width: 20%; text-align: left;">
+        <img src="{{ escudoPath }}" style="width: 80px;" alt="Escudo" />
+      </td>
+      <td style="width: 60%; text-align: center;">
+        <div class="header-text">
+          <p>República Bolivariana de Venezuela<br>
+          Ministerio del Poder Popular para las Comunas y Movimientos Sociales<br>
+          Rubio – Municipio Junín – Estado Táchira</p>
+        </div>
+      </td>
+      <td style="width: 20%; text-align: right;">
+        <img src="{{ consejologoPath }}" style="width: 80px;" alt="Logo" />
+      </td>
+    </tr>
+  </table>
+
+  <hr class="divider">
+
+  <div class="title">CONSTANCIA DE FALLECIMIENTO</div>
+
+  <p class="paragraph">
+    Nosotros voceros del <strong>Consejo Comunal "Kilometro 5"</strong>, abajo firmantes registrados ante
+    la Oficina de Registro del Ministerio del Poder Popular para las Comunas y Movimientos Sociales bajo
+    <strong>CODIGO U-CCO-18-06-02-002911, CÓDIGO SITUR Nº: 20-14-04-001-0045, RIF C-503144238</strong>, ubicados en el Kilometro 5 parte alta, parroquia Bramón del Municipio Junín del Estado
+    Táchira. En uso de las atribuciones legales que nos confiere la Ley Orgánica del Poder Popular y la
+    Ley Orgánica de los Consejos Comunales.
+  </p>
+
+  <p class="paragraph">
+    Por medio de la presente hacemos constar que el ciudadano(a): 
+    <strong>{{ apellido|title }}, {{ nombre|title }},
+    de {{ edad }} años de edad</strong>,
+    {% if tiene_cedula %}
+        titular de la Cédula de Identidad <strong>Nº {{ cedula }}</strong>,
+    {% else %}
+        <strong>quien no poseía Cédula de Identidad,</strong>
+    {% endif %}
+   PERMANECIÓ residenciado(a) en esta comunidad DURANTE {{ tiempo_residencia|upper }} AÑOS en 
+    EL KILOMETRO 5 sector {{ ubicacion }}, Y la presente fecha<strong> 
+    {{ dia_fallecimiento }} DEL MES DE {{ mes_fallecimiento|upper }} DEL {{ anio_fallecimiento }}</strong>
+    falleció a las <strong>{{ hora_fallecimiento|upper }}</strong>, su causa de fallecimiento es 
+    <strong>{{ causa_fallecimiento|upper }}</strong>.
+  </p>
+
+  <p class="paragraph space-4">
+    Constancia que se expide en el Km5, a solicitud de parte interesada para trámites legales, a los 
+    {{ dia_expedicion }} días del mes de {{ mes_expedicion|lower }} del {{ anio_expedicion }}
+  </p>
+
+  <!-- SECCIÓN DE FIRMANTES - con espacios ajustados hacia arriba -->
+  <div class="signatures">
+    <div class="signatures-label">Por el Consejo Comunal</div>
+    <table class="sig-table">
+      <tr>
+        <td class="sig-cell-full">
+          <span class="line-large">________________________</span>
+          <div class="signature-name">{{v_vivienda}}</div>
+          <div class="signature-info">C.I. {{ci_vivienda}}</div>
+          <div class="signature-role">Vocero(a) Vivienda y Hábitat</div>
+          <div class="signature-info">Telf. {{ tel_vivienda }}</div>
+        </td>
+        <td class="sig-cell-full">
+          <span class="line-large">________________________</span>
+          <div class="signature-name">{{v_servicios}}</div>
+          <div class="signature-info">C.I. {{ci_servicios}}</div>
+          <div class="signature-role">Vocero(a) de Servicios Públicos</div>
+          <div class="signature-info">Telf. {{ tel_servicios }}</div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" class="sig-cell-full">
+          <span class="line-large">________________________</span>
+          <div class="signature-name">{{v_salud}}</div>
+          <div class="signature-info">C.I. {{ci_salud}}</div>
+          <div class="signature-role">Vocero(a) de Salud Integral</div>
+          <div class="signature-info">Telf. {{ tel_salud }}</div>
+        </td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="footer">
+    NUESTRO COMPROMISO ES SERVIRLES
+  </div>
+</div>
+
+</body>
+</html>

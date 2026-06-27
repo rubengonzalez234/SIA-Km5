@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Finanzas - {{ moneda }}</title>
+    <style>
+        @page { size: letter; margin: 40px; }
+        body { font-family: 'Helvetica', 'Arial', sans-serif; color: #333333; margin: 0; padding: 0; font-size: 10pt; line-height: 1.4; }
+        .navbar-simulada { background-color: #0d6efd; padding: 15px 20px; color: #ffffff; font-size: 16px; font-weight: bold; margin-bottom: 25px; border-radius: 4px; text-transform: uppercase; }
+        .header-info { margin-bottom: 25px; }
+        .titulo-reporte { font-size: 24px; font-weight: bold; color: #222222; margin: 0 0 5px 0; text-transform: uppercase; }
+        .subtitulo-reporte { font-size: 13px; color: #666666; margin: 0; }
+        .resumen-tabla { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+        .resumen-tabla td { padding: 12px; border: 1px solid #dddddd; text-align: center; width: 25%; border-radius: 4px; }
+        .monto { font-size: 14pt; font-weight: bold; margin-top: 4px; }
+        .seccion-titulo { font-size: 14pt; font-weight: bold; color: #222222; margin-top: 25px; margin-bottom: 12px; border-bottom: 2px solid #0d6efd; padding-bottom: 5px; text-transform: uppercase; }
+        .tabla-datos { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+        .tabla-datos th { background-color: #f8f9fa; color: #333333; font-weight: bold; font-size: 10pt; padding: 10px; border: 1px solid #dddddd; text-align: left; text-transform: uppercase; }
+        .tabla-datos td { padding: 10px; font-size: 10pt; border: 1px solid #dddddd; vertical-align: middle; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        ul.voceros-list { margin: 0; padding-left: 15px; }
+        ul.voceros-list li { margin-bottom: 5px; list-style-type: square; }
+        .footer { text-align: center; font-size: 9px; color: #888888; margin-top: 40px; border-top: 1px solid #dddddd; padding-top: 8px; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar-simulada">Sistema de Información Automatizado (SIA KM5)</div>
+
+    <div class="header-info">
+        <div class="titulo-reporte">Reporte de Finanzas Comunitarias</div>
+        <div class="subtitulo-reporte">
+            Libro de Control de Fondos en <strong>{{ moneda }}</strong> | Generado por: {{ usuario }} el {{ fecha_reporte|date:"d/m/Y" }}
+        </div>
+    </div>
+
+    <table class="resumen-tabla">
+        <tr>
+            <td style="background-color: #e8f5e9; border-left: 4px solid #2e7d32;">
+                <div style="font-size: 8.5pt; text-transform: uppercase; font-weight: bold; color: #2e7d32;">Ingresos</div>
+                <div class="monto" style="color: #2e7d32;">+{{ total_ingresos|default:"0.00"|floatformat:2 }}</div>
+            </td>
+            <td style="background-color: #ffebee; border-left: 4px solid #c62828;">
+                <div style="font-size: 8.5pt; text-transform: uppercase; font-weight: bold; color: #c62828;">Egresos</div>
+                <div class="monto" style="color: #c62828;">-{{ total_egresos|default:"0.00"|floatformat:2 }}</div>
+            </td>
+            {% if moneda == 'USD' %}
+            <td style="background-color: #fff3e0; border-left: 4px solid #ef6c00;">
+                <div style="font-size: 8.5pt; text-transform: uppercase; font-weight: bold; color: #ef6c00;">Comprometido</div>
+                <div class="monto" style="color: #ef6c00;">-{{ fondos_comprometidos|default:"0.00"|floatformat:2 }}</div>
+            </td>
+            {% endif %}
+            <td style="background-color: #e3f2fd; border-left: 4px solid #1565c0;">
+                <div style="font-size: 8.5pt; text-transform: uppercase; font-weight: bold; color: #1565c0;">Disponible</div>
+                <div class="monto" style="color: #1565c0;">{{ saldo_real_disponible|default:"0.00"|floatformat:2 }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="seccion-titulo">Voceras y Voceros de Control Comunal</div>
+    <table class="tabla-datos">
+        <thead>
+            <tr>
+                <th style="width: 50%;">Comité de Administración y Finanzas</th>
+                <th style="width: 50%;">Comité de Contraloría Comunitaria</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="vertical-align: top; padding: 12px;">
+                    <ul class="voceros-list">
+                    {% for vocero in voceros_finanzas %}
+                        <li>{{ vocero.habitante.nombres|title }} {{ vocero.habitante.apellidos|title }} 
+                            {% if vocero.habitante.cedula %}(V-{{ vocero.habitante.cedula }}){% endif %} - <strong>{{ vocero.get_tipo_vocero_display }}</strong>
+                        </li>
+                    {% empty %}
+                        <li style="color: #888888; list-style-type: none; margin-left: -15px;">No hay miembros registrados en Finanzas.</li>
+                    {% endfor %}
+                    </ul>
+                </td>
+                <td style="vertical-align: top; padding: 12px;">
+                    <ul class="voceros-list">
+                    {% for vocero in voceros_contraloria %}
+                        <li>{{ vocero.habitante.nombres|title }} {{ vocero.habitante.apellidos|title }} 
+                            {% if vocero.habitante.cedula %}(V-{{ vocero.habitante.cedula }}){% endif %} - <strong>{{ vocero.get_tipo_vocero_display }}</strong>
+                        </li>
+                    {% empty %}
+                        <li style="color: #888888; list-style-type: none; margin-left: -15px;">No hay miembros registrados en Contraloría.</li>
+                    {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="seccion-titulo">Últimos Movimientos Registrados ({{ moneda }})</div>
+    <table class="tabla-datos">
+        <thead>
+            <tr>
+                <th style="width: 15%; text-align: center;">Fecha</th>
+                <th style="width: 15%;">Tipo</th>
+                <th style="width: 50%;">Concepto / Descripción</th>
+                <th style="width: 20%; text-align: right;">Monto</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in movimientos %}
+            <tr>
+                <td class="text-center">{{ m.fecha_registro|date:"d/m/Y" }}</td>
+                <td>
+                    {% if m.tipo == 'INGRESO' %}
+                        <strong style="color: #2e7d32;">INGRESO</strong>
+                    {% else %}
+                        <strong style="color: #c62828;">EGRESO</strong>
+                    {% endif %}
+                </td>
+                <td>{{ m.concepto }}</td>
+                <td class="text-right" style="font-weight: bold;">
+                    {% if m.tipo == 'INGRESO' %}+{% else %}-{% endif %}{{ m.monto|floatformat:2 }}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center" style="color: #888888; padding: 20px;">
+                    No existen movimientos registrados en los libros contables para la divisa {{ moneda }}.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Sistema de Información Automatizado (SIA KM5)
+    </div>
+
+</body>
+</html>

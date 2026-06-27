@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>SIA KM5 - Reporte CLAP</title>
+    <style>
+        /* CONFIGURACIÓN DE PÁGINA IDÉNTICA A GAS COMUNAL */
+        @page {
+            size: letter;
+            margin: 1.5cm;
+            margin-bottom: 2cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            color: #333333;
+            line-height: 1.4;
+        }
+
+        /* Encabezado Institucional */
+        .header-table {
+            width: 100%;
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .title-sistema {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        
+        .subtitle-comunidad {
+            font-size: 10pt;
+            color: #555555;
+            margin-top: 3px;
+        }
+
+        .meta-info {
+            text-align: right;
+            font-size: 9pt;
+            color: #666;
+        }
+
+        /* Tabla de Contenido */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            vertical-align: middle;
+        }
+
+        .firma-box {
+            height: 35px;
+            width: 100%;
+            border-bottom: 1px solid #000;
+        }
+
+        .text-center { text-align: center; }
+    </style>
+</head>
+<body>
+
+    <table class="header-table">
+        <tr>
+            <td>
+                <div class="title-sistema">SIA KM5 - Gestión CLAP</div>
+                <div class="subtitle-comunidad">Planilla de Entrega de Alimentos</div>
+            </td>
+            <td class="meta-info">
+                <strong>Calle:</strong> {{ nombre_calle }}<br>
+                <strong>Fecha:</strong> {{ fecha }}
+            </td>
+        </tr>
+    </table>
+
+    <div style="margin-bottom: 10px;">
+        <strong>Jefe de Calle:</strong> {{ nombre_lider }}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 20%;">C.I.</th>
+                <th style="width: 50%;">Nombre y Apellido</th>
+                <th style="width: 30%;" class="text-center">Firma de Conformidad</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for habitante in registros %}
+            <tr>
+                <td>{{ habitante.cedula }}</td>
+                <td>{{ habitante.nombres|title }} {{ habitante.apellidos|title }}</td>
+                <td>
+                    <div class="firma-box"></div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="text-center" style="padding: 30px; font-style: italic;">
+                    No existen beneficiarios seleccionados para esta planilla.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="margin-top: 30px; font-size: 8pt; color: #777; text-align: center;">
+        Generado por: {{ usuario }} | Hora: {{ hora }}
+    </div>
+
+</body>
+</html>

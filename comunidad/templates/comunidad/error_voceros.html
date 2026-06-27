@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Error: Faltan Voceros</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 50px; background-color: #f4f4f4; }
+        .container { 
+            background: #fff; padding: 30px; border-radius: 8px; 
+            border-left: 10px solid #d9534f; /* Borde rojo de alerta */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 600px; margin: auto;
+        }
+        h2 { color: #d9534f; margin-top: 0; }
+        ul { list-style-type: none; padding: 0; }
+        li { 
+            background: #f9d6d5; color: #a94442; 
+            padding: 10px; margin-bottom: 5px; 
+            border-radius: 4px; font-weight: bold;
+            border: 1px solid #ebccd1;
+        }
+        .btn {
+            display: inline-block; margin-top: 20px; padding: 10px 20px;
+            background: #337ab7; color: white; text-decoration: none; border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>⚠ Error!</h2>
+        <p>No se puede generar la constancia, faltan los siguientes voceros por registrar:</p>
+        
+        <ul>
+            {% for comite in faltantes %}
+                <li>{{ comite }}</li>
+            {% endfor %}
+        </ul>
+
+        <p>Por favor, diríjase al módulo de <strong>Organización</strong> para completar los registros faltantes antes de intentar emitir nuevamente la constancia.</p>
+        <a href="{% url 'organizacion' %}" class="btn">Organizacion</a>
+        <a href="{% url 'lista_habitantes' %}" class="btn">Regresar</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIA KM5 - Finanzas Comunales</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+        .section-card { background: white; border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); padding: 24px; }
+        .comite-card { border: 1px solid #eef2f7; border-radius: 14px; transition: all 0.3s ease; background: #ffffff; }
+        .comite-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(13, 110, 253, 0.08); border-color: #0d6efd; }
+        .timeline-audit { border-left: 3px dashed #dee2e6; padding-left: 20px; position: relative; }
+        .timeline-item { position: relative; padding-bottom: 20px; }
+        .timeline-item::before { content: ''; position: absolute; left: -26.5px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: #0d6efd; border: 2px solid white; }
+        .timeline-item.egreso::before { background: #dc3545; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
+        <div class="container-fluid px-4">
+            <span class="navbar-brand mb-0 h1 fw-bold"><i class="bi bi-house-door-fill"></i> SIA KM5</span>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="d-flex align-items-center ms-auto flex-wrap gap-2">
+                    <a href="{% url 'lista_habitantes' %}" class="btn btn-light btn-sm fw-bold text-primary px-3"><i class="bi bi-people-fill me-1"></i> Censo Habitantes</a>
+                    <a href="{% url 'organizacion' %}" class="btn btn-light btn-sm fw-bold text-primary px-3"><i class="bi bi-diagram-3-fill me-1"></i> Organización</a>
+                    <a href="{% url 'gestion_clap' %}" class="btn btn-light btn-sm fw-bold text-primary px-3"><i class="bi bi-basket-fill me-1"></i> CLAP</a>
+                    <a href="{% url 'censo_bombonas' %}" class="btn btn-light btn-sm fw-bold text-primary px-3"><i class="bi bi-fuel-pump-fill me-1"></i> Gas Comunal</a>
+                    <a href="{% url 'lista_proyectos' %}" class="btn btn-light btn-sm fw-bold text-primary px-3"><i class="bi bi-folder-fill me-1"></i> Proyectos</a>
+                    <span class="text-white ms-2 me-2 small d-none d-md-inline">Usuario: <strong>{{ user.username }}</strong></span>
+                    <a href="{% url 'logout' %}" class="btn btn-outline-light btn-sm">Cerrar Sesión</a>
+                </div>    
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 mt-3">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if 'error' in message.tags %}alert-danger{% else %}alert-info{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi {% if 'error' in message.tags %}bi-exclamation-octagon-fill{% else %}bi-info-circle-fill{% endif %} me-2"></i>
+                <strong>{% if 'error' in message.tags %}¡Atención!{% else %}Mensaje:{% endif %}</strong> {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+    <div class="container-fluid px-4">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h2 class="fw-bold text-dark mb-1">Finanzas</h2>
+                <p class="text-secondary mb-0">Gestión de recursos del Consejo Comunal</p>
+            </div>
+        </div>
+        
+        <div class="card section-card mb-4 bg-white border-0 py-3">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="bg-primary bg-opacity-10 p-2 rounded text-primary"><i class="bi bi-coin fs-5"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Tipo de moneda:</h6>
+                        <p class="text-muted small mb-0">Seleccione la divisa para visualizar y registrar operaciones</p>
+                    </div>
+                </div>
+                <div class="btn-group shadow-sm" role="group">
+                    <a href="{% url 'panel_finanzas_moneda' 'USD' %}" class="btn px-4 {% if moneda_activa == 'USD' %}btn-primary fw-bold{% else %}btn-outline-primary{% endif %}">Dólares (USD)</a>
+                    <a href="{% url 'panel_finanzas_moneda' 'BS' %}" class="btn px-4 {% if moneda_activa == 'BS' %}btn-primary fw-bold{% else %}btn-outline-primary{% endif %}">Bolívares (BS)</a>
+                    <a href="{% url 'panel_finanzas_moneda' 'COP' %}" class="btn px-4 {% if moneda_activa == 'COP' %}btn-primary fw-bold{% else %}btn-outline-primary{% endif %}">Pesos (COP)</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4 justify-content-center">
+            <div class="col-md-3">
+                <div class="card p-3 border-start border-success border-4 shadow-sm h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="text-muted text-uppercase fw-bold mb-0">Total Ingresado</h6>
+                        <i class="bi bi-arrow-up-circle-fill text-success fs-4"></i>
+                    </div>
+                    <h3 class="text-success mb-0">{% if moneda_activa == 'USD' %}${% endif %}{{ total_ingresos|floatformat:2 }} <span class="fs-6 text-muted">{{ moneda_activa }}</span></h3>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card p-3 border-start border-danger border-4 shadow-sm h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="text-muted text-uppercase fw-bold mb-0">Total Egresos</h6>
+                        <i class="bi bi-arrow-down-circle-fill text-danger fs-4"></i>
+                    </div>
+                    <h3 class="text-danger mb-0">{% if moneda_activa == 'USD' %}${% endif %}{{ total_egresos|floatformat:2 }} <span class="fs-6 text-muted">{{ moneda_activa }}</span></h3>
+                </div>
+            </div>
+            
+            {% if moneda_activa == 'USD' %}
+            <div class="col-md-3">
+                <div class="card p-3 border-start border-warning border-4 shadow-sm h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="text-muted text-uppercase fw-bold mb-0">Comprometido</h6>
+                        <i class="bi bi-shield-lock-fill text-warning fs-4"></i>
+                    </div>
+                    <h3 class="text-warning mb-0">{% if moneda_activa == 'USD' %}${% endif %}{{ fondos_comprometidos|floatformat:2 }} <span class="fs-6 text-muted">USD</span></h3>
+                    <small class="text-muted">Reservado para obras activas</small>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="col-md-3">
+                <div class="card p-3 border-start border-primary border-4 shadow-sm h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="text-muted text-uppercase fw-bold mb-0">Saldo Disponible</h6>
+                        <i class="bi bi-wallet2 text-primary fs-4"></i>
+                    </div>
+                    <h3 class="text-primary mb-0">{% if moneda_activa == 'USD' %}${% endif %}{{ saldo_real_disponible|floatformat:2 }} <span class="fs-6 text-muted">{{ moneda_activa }}</span></h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card section-card mb-4">
+                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-plus-circle-fill text-primary me-2"></i> Registrar Movimiento</h5>
+                    {% if permite_registro %}
+                    <form action="{% url 'guardar_movimiento' moneda_activa %}" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Tipo de Operación</label>
+                            <select class="form-select border-2" name="tipo" required>
+                                <option value="INGRESO">Ingreso (+)</option>
+                                <option value="EGRESO">Egreso (-)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Concepto</label>
+                            <input type="text" class="form-control border-2" name="concepto" required autocomplete="off">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-muted">Monto ({{ moneda_activa }})</label>
+                            <div class="input-group border-2">
+                                <span class="input-group-text bg-light fw-bold">{% if moneda_activa == 'USD' %}${% else %}{{ moneda_activa }}{% endif %}</span>
+                                <input type="number" step="0.01" min="0.01" class="form-control border-start-0" name="monto" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">Registrar</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card section-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-dark mb-0"><i class="bi bi-journal-text text-primary me-2"></i> Historial ({{ moneda_activa }})</h5>
+                        <a href="{% url 'exportar_finanzas_pdf' moneda=moneda_activa %}" target="_blank" class="btn btn-outline-danger btn-sm px-3 fw-bold">
+                            <i class="bi bi-file-earmark-pdf-fill me-1"></i> Generar PDF
+                        </a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light text-muted small text-uppercase">
+                                <tr><th>Fecha</th><th>Tipo</th><th>Concepto</th><th class="text-end">Monto</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for movimiento in movimientos %}
+                                <tr>
+                                    <td class="small text-muted">{{ movimiento.fecha_registro|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        {% if movimiento.tipo == 'INGRESO' %}
+                                        <span class="badge bg-success bg-opacity-10 text-success px-2 py-1">INGRESO</span>
+                                        {% else %}
+                                        <span class="badge bg-danger bg-opacity-10 text-danger px-2 py-1">EGRESO</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="fw-bold text-dark">{{ movimiento.concepto }}</td>
+                                    <td class="text-end fw-bold {% if movimiento.tipo == 'INGRESO' %}text-success{% else %}text-danger{% endif %}">
+                                        {% if movimiento.tipo == 'INGRESO' %}+{% else %}-{% endif %} {% if moneda_activa == 'USD' %}${% endif %}{{ movimiento.monto }} <span class="small text-muted">{{ moneda_activa }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>SIA KM5 - Reporte Censo Gas Comunal</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 1.5cm;
+            margin-bottom: 2cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            color: #333333;
+            line-height: 1.4;
+        }
+
+        .header-table {
+            width: 100%;
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .title-sistema { font-size: 16pt; font-weight: bold; color: #0d6efd; }
+        .subtitle-comunidad { font-size: 10pt; color: #555555; margin-top: 3px; }
+        .meta-info { text-align: right; font-size: 9pt; color: #666666; }
+
+        .info-box { background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 12px; margin-bottom: 20px; }
+        .info-title { font-size: 11pt; font-weight: bold; color: #212529; text-transform: uppercase; }
+
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .data-table th {
+            background-color: #0d6efd;
+            color: #ffffff;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 8.5pt;
+            padding: 8px 6px;
+            border: 1px solid #0d6efd;
+            text-align: left;
+        }
+        .data-table td {
+            padding: 7px 6px;
+            border: 1px solid #dee2e6;
+            font-size: 9pt;
+            vertical-align: middle;
+        }
+
+        .text-center { text-align: center; }
+        .fw-bold { font-weight: bold; }
+        .text-muted { color: #777777; }
+        .badge-cilindro { font-weight: bold; color: #0d6efd; }
+        
+        /* Estilo para mostrar los cilindros uno debajo del otro SIN líneas en blanco */
+        .cilindros-lista {
+            display: block;
+            line-height: 1.1;  /* Muy compacto */
+            text-align: center;
+        }
+        .cilindros-lista .cilindro-item {
+            display: block;
+            line-height: 1.1;  /* Misma altura para todos */
+            padding: 0;
+            margin: 0;  /* Sin margen entre elementos */
+        }
+        /* Eliminar cualquier espacio adicional entre elementos */
+        .cilindros-lista .cilindro-item + .cilindro-item {
+            margin-top: 0;
+            padding-top: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <table class="header-table">
+        <tr>
+            <td>
+                <div class="title-sistema">SIA KM5</div>
+                <div class="subtitle-comunidad">Consejo Comunal Kilómetro 5</div>
+             </td>
+            <td class="meta-info">
+                <strong>Fecha:</strong> {{ fecha }}<br>
+                <strong>Hora:</strong> {{ hora }}<br>
+             </td>
+        </tr>
+    </table>
+
+    <div class="text-center" style="margin-bottom: 15px;">
+        <h2 style="margin: 0; color: #212529; font-size: 14pt; font-weight: bold; text-transform: uppercase;">
+            Censo General de Cilindros - Gas Comunal
+        </h2>
+    </div>
+
+    <div class="info-box">
+        <table style="width: 100%;">
+            <tr>
+                <td style="width: 50%;">
+                    <span class="info-title">Ubicación:</span> <span class="fw-bold" style="color: #0d6efd;">{{ nombre_calle }}</span>
+                 </td>
+                <td style="width: 50%;">
+                    <span class="info-title">Líder / Jefe de Calle:</span> <span class="fw-bold">{{ nombre_lider|upper }}</span>
+                 </td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 20%;" class="text-center">Cédula</th>
+                <th style="width: 45%;">Jefe de Familia Beneficiario</th>
+                <th style="width: 35%;" class="text-center">Cilindros Censados</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in registros %}
+            <tr>
+                <td class="text-center fw-bold" style="color: #495057;">
+                    {{ item.jefe_familia.cedula }}
+                 </td>
+                
+                <td style="text-transform: capitalize;">
+                    {{ item.jefe_familia.nombres }} {{ item.jefe_familia.apellidos }}
+                 </td>
+                
+                <td class="text-center" style="padding: 4px 6px;">
+                    <div class="cilindros-lista">
+                        {% if item.bombonas_10kg > 0 %}
+                            <span class="cilindro-item"><span class="badge-cilindro">10Kg:</span> {{ item.bombonas_10kg }}</span>
+                        {% endif %}
+                        {% if item.bombonas_18kg > 0 %}
+                            <span class="cilindro-item"><span class="badge-cilindro">18Kg:</span> {{ item.bombonas_18kg }}</span>
+                        {% endif %}
+                        {% if item.bombonas_27kg > 0 %}
+                            <span class="cilindro-item"><span class="badge-cilindro">27Kg:</span> {{ item.bombonas_27kg }}</span>
+                        {% endif %}
+                        {% if item.bombonas_43kg > 0 %}
+                            <span class="cilindro-item"><span class="badge-cilindro">43Kg:</span> {{ item.bombonas_43kg }}</span>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="text-center text-muted" style="padding: 30px; font-style: italic;">
+                    No existen registros de cilindros censados para esta consulta.
+                 </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="margin-top: 35px; font-size: 8pt; color: #777777; text-align: justify; border-top: 1px solid #dee2e6; padding-top: 8px;">
+        Sistema de Información Automatizado (SIA KM5) - Reporte generado por: {{ usuario }}
+    </div>
+
+</body>
+</html>
